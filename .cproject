@@ -61,6 +61,7 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1304941279" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../src"/>
@@ -102,12 +103,16 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.552444216" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1458844290" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1169210834" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1065738287" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
+								<option id="gnu.cpp.link.option.paths.1599998651" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/inet/3rdparty/nsc-0.5.3/lib}&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1326537913" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -158,6 +163,7 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.834164086" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -196,6 +202,7 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1085592762" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -207,7 +214,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="inet/transportlayer/tcp_lwip|inet/applications/voipstream|inet/linklayer/ext|inet/transportlayer/tcp_nsc|inet/routing/extras|transport/tcp_nsc|transport/tcp_lwip" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="inet/transportlayer/tcp_lwip|inet/applications/voipstream|inet/linklayer/ext|inet/routing/extras|transport/tcp_lwip" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -269,6 +276,7 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1086707691" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../src"/>
@@ -310,12 +318,16 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.951413942" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.406690453" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1190158571" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.893445214" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
+								<option id="gnu.cpp.link.option.paths.1704074844" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/inet/3rdparty/nsc-0.5.3/lib}&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.422104919" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -366,6 +378,7 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1861554069" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -404,6 +417,7 @@
 									<listOptionValue builtIn="false" value="WITH_LMAC"/>
 									<listOptionValue builtIn="false" value="WITH_CSMA"/>
 									<listOptionValue builtIn="false" value="WITH_CSMACA"/>
+									<listOptionValue builtIn="false" value="WITH_TCP_NSC"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1904184591" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -415,7 +429,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="inet/transportlayer/tcp_lwip|inet/applications/voipstream|inet/linklayer/ext|inet/transportlayer/tcp_nsc|inet/routing/extras|transport/tcp_nsc|transport/tcp_lwip" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="inet/transportlayer/tcp_lwip|inet/applications/voipstream|inet/linklayer/ext|inet/routing/extras|transport/tcp_lwip" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

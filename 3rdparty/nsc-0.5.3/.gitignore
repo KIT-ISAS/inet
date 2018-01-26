@@ -1,0 +1,10 @@
+/globaliser/
+/.sconf_temp/
+/.sconsign.dblite
+/include/sim_errno.h
+/include/sim_interface.h
+/linux-2.6.*/include/asm
+/linux-2.6.*/nsc/sim_support.os
+/test/test_interface
+*.globalised.c
+
