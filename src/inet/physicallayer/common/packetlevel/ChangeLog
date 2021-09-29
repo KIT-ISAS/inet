@@ -1,5 +1,71 @@
 ====== inet-3.x ======
 
+2018-03-21  ------ inet-3.6.4 released ------
+
+2018-02-28  Justin Goins
+
+	bugfix: corrected memory management issue in radio module
+
+	Corrected a fatal bug in the radio module that can occur if the
+	separateReceptionParts mode is used.
+	 This fixes an invalid delete(void*) attempt that occurs if a packet
+	reception ends while the radio is still switching from RX --> another
+	mode. Previously the code was trying to use abortReception(cMessage*) on
+	a packet that had already been processed with endReception(cMessage*). If
+	your simulation was unlucky enough to encounter this case the simulator
+	would segfault.
+
+2018-01-12  Zoltan Bojthe
+
+	Changed some module parameters from double to int.
+
+2017-12-22  ------ inet-3.6.3 released ------
+
+2017-10-02  ------ inet-3.6.2 released ------
+
+2017-09-29  Levente Mészáros
+
+	Radio: Moved self message construction to local stage.
+
+2017-07-06  ------ inet-3.6.1 released ------
+
+2017-06-09  ------ inet-3.6.0 released ------
+
+2017-06-01  Zoltan Bojthe
+
+	RadioMedium: CID 77990 Uninitialized scalar field
+
+2017-02-07  Levente Mészáros
+
+	Fixed interference end time calculation.
+
+2017-01-13  Levente Mészáros
+
+	Dropped old communication and interference range visualization.
+
+2016-11-30  Levente Mészáros
+
+	Replaced listener in RadioMedium with signals.
+
+2017-02-20  ------ inet-3.5.0 released ------
+
+2016-10-20  Rudolf Hornig
+
+	refactoring: removed compatibility macros required for OMNeT++ 4.x builds
+	+ warning fixes
+
+2016-10-19  Zoltan Bojthe
+
+	ModuleAccess: getters/finders were made const
+
+2016-09-23  Zoltan Bojthe
+
+	refreshDisplay: remove unnecessary hasGUI() calls
+
+2016-09-22  Zoltan Bojthe
+
+	omnetpp5: add/use refreshDisplay()
+
 2016-06-15  ------ inet-3.4.0 released ------
 
 2016-05-10  Levente Meszaros

@@ -35,20 +35,27 @@ ned-path = .;../../../../src;../../lib
 sim-time-limit = 100s
 cmdenv-express-mode = false
 
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
+
 # status
 **.hasStatus = true
 *.hostSource.status.initialStatus = "down"
 *.hostDestination.status.initialStatus = "up"
 
 # power
-**.energyStorageType = "SimpleEnergyStorage"
-**.energyConsumerType = "StateBasedEnergyConsumer"
+**.energyStorageType = "SimpleEpEnergyStorage"
+**.energyManagementType = "SimpleEpEnergyManagement"
+**.energyConsumerType = "StateBasedEpEnergyConsumer"
 **.energyStorage.nominalCapacity = 1J
-**.energyStorage.nodeShutdownCapacity = 0J
-**.energyStorage.nodeStartCapacity = 0.2 * this.nominalCapacity
+**.energyManagement.nodeShutdownCapacity = 0J
+**.energyManagement.nodeStartCapacity = 0.2J
 *.hostSource.energyStorage.initialCapacity = 0J
 *.hostDestination.energyStorage.initialCapacity = 0.1J
-*.hostSource.energyGeneratorType = "AlternatingEnergyGenerator"
+*.hostSource.energyGeneratorType = "AlternatingEpEnergyGenerator"
 *.hostSource.energyGenerator.energySinkModule = "hostSource.energyStorage"
 *.hostSource.energyGenerator.powerGeneration = 10mW
 *.hostSource.energyGenerator.sleepInterval = 0s
@@ -66,7 +73,7 @@ cmdenv-express-mode = false
 **.mobility.initialZ = 0m
 *.host*.mobilityType = "StationaryMobility"
 *.hostSource.mobility.initialX = 20m
-*.hostDestionation.mobility.initialX = 80m
+*.hostDestination.mobility.initialX = 80m
 
 # ping app
 *.host*.numPingApps = 1
@@ -78,8 +85,8 @@ cmdenv-express-mode = false
 	Test.hostSource.pingApp[0]
 --------------------------------------------------------
 sent: 81   received: 30   loss rate (%): 62.963
-round-trip min/avg/max (ms): 0.456262/0.813337/1.66852
-stddev (ms): 0.237232   variance:5.62791e-08
+round-trip min/avg/max (ms): 0.2344/0.553547/1.5488
+stddev (ms): 0.25787   variance:6.64969e-08
 --------------------------------------------------------
 %#--------------------------------------------------------------------------------------------------------------
 %not-contains: stdout

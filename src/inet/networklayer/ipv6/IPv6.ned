@@ -73,6 +73,7 @@ simple IPv6
         string ipv6NeighbourDiscoveryModule;
         string icmpv6Module;
         string ipv6TunnelingModule;
+        string serumModule;
         double procDelay @unit("s") = default(0s);
         @display("i=block/network2");
     gates:

@@ -32,6 +32,10 @@
 #include "inet/networklayer/ipv6/IPv6FragBuf.h"
 #include "inet/common/ProtocolMap.h"
 
+#ifdef WITH_SERUM
+#include "inet/networklayer/serum/SerumSupport.h"
+#endif
+
 namespace inet {
 
 class ICMPv6Message;
@@ -66,6 +70,10 @@ class INET_API IPv6 : public QueueBase, public ILifecycle, public INetfilter, pu
     ICMPv6 *icmp = nullptr;
 
     IPv6Tunneling *tunneling = nullptr;
+
+#ifdef WITH_SERUM
+    SerumSupport * sm = nullptr;
+#endif
 
     // working vars
     unsigned int curFragmentId = -1;    // counter, used to assign unique fragmentIds to datagrams
@@ -113,7 +121,7 @@ class INET_API IPv6 : public QueueBase, public ILifecycle, public INetfilter, pu
     virtual InterfaceEntry *getSourceInterfaceFrom(cPacket *msg);
 
     // utility: show current statistics above the icon
-    virtual void updateDisplayString();
+    virtual void refreshDisplay() const override;
 
     /**
      * Encapsulate packet coming from higher layers into IPv6Datagram
@@ -234,14 +242,14 @@ class INET_API IPv6 : public QueueBase, public ILifecycle, public INetfilter, pu
     bool determineOutputInterface(const IPv6Address& destAddress, IPv6Address& nextHop, int& interfaceId,
             IPv6Datagram *datagram, bool fromHL);
 
-#ifdef WITH_xMIPv6
+#if defined(WITH_xMIPv6) || defined(WITH_SERUM)
     /**
      * Process the extension headers of the datagram.
      * Returns true if all have been processed successfully and false if errors occured
      * and the packet has to be dropped or if the datagram has been forwarded to another
      * module for further processing.
      */
-    bool processExtensionHeaders(IPv6Datagram *datagram);
+    bool processLocalExtensionHeaders(IPv6Datagram *datagram);
 #endif /* WITH_xMIPv6 */
 };
 

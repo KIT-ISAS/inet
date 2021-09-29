@@ -336,11 +336,13 @@ unsigned char BGPRouting::decisionProcess(const BGPUpdateMessage& msg, RoutingTa
             newEntry->setSourceType(IRoute::BGP);
             _rt->deleteRoute(oldEntry);
             _rt->addRoute(newEntry);
+            //FIXME model error: the RoutingTableEntry *entry will be stored in _BGPRoutingTable, but not stored in _rt, memory leak
+            //FIXME model error: The entry inserted to _BGPRoutingTable, but newEntry inserted to _rt; entry and newEntry are differ.
         }
     }
 
     entry->setInterface(_BGPSessions[sessionIndex]->getLinkIntf());
-    _BGPRoutingTable.push_back(entry);      //FIXME model error?  entry stored in _BGPRoutingTable, but sometimes not stored in _rt, memory leak
+    _BGPRoutingTable.push_back(entry);
 
     if (_BGPSessions[sessionIndex]->getType() == EGP) {
         std::string entryh = entry->getDestination().str();
@@ -351,14 +353,14 @@ unsigned char BGPRouting::decisionProcess(const BGPUpdateMessage& msg, RoutingTa
             ospf::IPv4AddressRange OSPFnetAddr;
             OSPFnetAddr.address = entry->getDestination();
             OSPFnetAddr.mask = entry->getNetmask();
-            ospf::OSPFRouting *ospf = findModuleFromPar<ospf::OSPFRouting>(par("ospfRoutingModule"), this);
+            ospf::OSPFRouting *ospf = getModuleFromPar<ospf::OSPFRouting>(par("ospfRoutingModule"), this);
             InterfaceEntry *ie = entry->getInterface();
             if (!ie)
                 throw cRuntimeError("Model error: interface entry is nullptr");
             ospf->insertExternalRoute(ie->getInterfaceId(), OSPFnetAddr);
         }
     }
-    return NEW_ROUTE_ADDED;     //FIXME model error? When returns NEW_ROUTE_ADDED then entry stored in _BGPRoutingTable, but sometimes not stored in _rt
+    return NEW_ROUTE_ADDED;     //FIXME model error: When returns NEW_ROUTE_ADDED then entry stored in _BGPRoutingTable, but sometimes not stored in _rt
 }
 
 bool BGPRouting::tieBreakingProcess(RoutingTableEntry *oldEntry, RoutingTableEntry *entry)
@@ -447,7 +449,7 @@ bool BGPRouting::checkExternalRoute(const IPv4Route *route)
 {
     IPv4Address OSPFRoute;
     OSPFRoute = route->getDestination();
-    ospf::OSPFRouting *ospf = findModuleFromPar<ospf::OSPFRouting>(par("ospfRoutingModule"), this);
+    ospf::OSPFRouting *ospf = getModuleFromPar<ospf::OSPFRouting>(par("ospfRoutingModule"), this);
     bool returnValue = ospf->checkExternalRoute(OSPFRoute);
     return returnValue;
 }

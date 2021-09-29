@@ -838,7 +838,7 @@ void CSMA::handleLowerPacket(cPacket *msg)
         delete msg;
         return;
     }
-    CSMAFrame *macPkt = static_cast<CSMAFrame *>(msg);
+    CSMAFrame *macPkt = check_and_cast<CSMAFrame *>(msg);
     const MACAddress& src = macPkt->getSrcAddr();
     const MACAddress& dest = macPkt->getDestAddr();
     long ExpectedNr = 0;
@@ -923,7 +923,7 @@ void CSMA::handleLowerPacket(cPacket *msg)
     }
 }
 
-void CSMA::receiveSignal(cComponent *source, simsignal_t signalID, long value DETAILS_ARG)
+void CSMA::receiveSignal(cComponent *source, simsignal_t signalID, long value, cObject *details)
 {
     Enter_Method_Silent();
     if (signalID == IRadio::transmissionStateChangedSignal) {

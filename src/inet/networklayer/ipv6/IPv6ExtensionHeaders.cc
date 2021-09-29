@@ -16,8 +16,25 @@
 //
 
 #include "inet/networklayer/ipv6/IPv6ExtensionHeaders.h"
+#include "inet/common/INETUtils.h"
 
 namespace inet {
+
+short IPv6HopByHopOptionsHeader::getByteLength() const {
+    return utils::roundUp(2 + tlvOptions.getLength(), 8);
+}
+
+IPv6HopByHopOptionsHeader * IPv6HopByHopOptionsHeader::dup() const {
+    return new IPv6HopByHopOptionsHeader(*this);
+}
+
+short IPv6DestinationOptionsHeader::getByteLength() const {
+    return utils::roundUp(2 + tlvOptions.getLength(), 8);
+}
+
+IPv6DestinationOptionsHeader * IPv6DestinationOptionsHeader::dup() const {
+    return new IPv6DestinationOptionsHeader(*this);
+}
 
 void IPv6RoutingHeader::setAddressArraySize(unsigned int size)
 {

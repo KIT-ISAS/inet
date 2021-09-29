@@ -14,6 +14,13 @@ cmdenv-event-banners=false
 cmdenv-express-mode = false
 tkenv-plugin-path = ../../../etc/plugins
 ned-path = .;../../../../src;../../lib
+
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
+
 **.testing = false
 **.testTimeout = 0
 
@@ -67,5 +74,5 @@ ned-path = .;../../../../src;../../lib
 
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: results/General-0.sca
-scalar multihomed.sctp_client.sctp 	"Number of Fast Retransmissions 1:10.1.3.1" 	[1-9][0-9]*
+scalar multihomed.sctp_client.sctp "Number of Fast Retransmissions 1:10.1.3.1" [1-9][0-9]*
 %#--------------------------------------------------------------------------------------------------------------

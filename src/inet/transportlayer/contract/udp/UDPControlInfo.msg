@@ -19,11 +19,14 @@
 
 cplusplus {{
 #include "inet/networklayer/common/L3Address.h"
+#include "inet/networklayer/contract/NetworkOptions.h"
 }}
 
 namespace inet;
 
 class noncobject L3Address;
+
+class noncobject NetworkOptionsPtr;
 
 
 //
@@ -114,10 +117,12 @@ class UDPConnectCommand extends UDPControlInfo
 //
 class UDPSendCommand extends UDPControlInfo
 {
+    @customize(true);
     L3Address destAddr; // destination IPv4 or IPv6 address
     int destPort = -1;     // destination port
     L3Address srcAddr;       // source address
     int interfaceId = -1; // interface on which the packet must be sent (see ~InterfaceTable)
+    NetworkOptionsPtr networkOptions;
 }
 
 
@@ -140,6 +145,7 @@ class UDPCloseCommand extends UDPControlInfo
 //
 class UDPDataIndication extends UDPControlInfo
 {
+    @customize(true);
     L3Address srcAddr;   // source IPv4 or IPv6 address of the received packet
     L3Address destAddr;  // destination IPv4 or IPv6 address of the received packet
     int srcPort;           // source port of the received packet
@@ -147,6 +153,7 @@ class UDPDataIndication extends UDPControlInfo
     int ttl;               // TTL field of the received packet
     int interfaceId;       // interface on which the packet was received (see ~InterfaceTable)
     unsigned char typeOfService; // IPv4 Type of Service / IPv6 Traffic Class field of received packet
+    NetworkOptionsPtr networkOptions;
 }
 
 //

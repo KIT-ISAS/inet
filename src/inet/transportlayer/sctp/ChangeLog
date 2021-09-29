@@ -1,5 +1,53 @@
 ====== inet-3.x ======
 
+2018-03-21  ------ inet-3.6.4 released ------
+
+2018-01-12  Zoltan Bojthe
+
+	Changed some module parameters from double to int.
+
+2017-12-22  ------ inet-3.6.3 released ------
+
+2017-12-21  Irene Ruengeler
+
+	Fix retransmission bugs
+
+	- The transmission counter was not advanced when the data was timer based
+	retransmitted.
+	- When fast recovery was active and the cumulative TSN advanced, the miss
+	indications were not increased.
+	- In PacketDrill the counting of Gap Reports was fixed.
+	- A PacketDrill test to test fast Retransmissions was added.
+
+2017-10-02  ------ inet-3.6.2 released ------
+
+2017-07-06  ------ inet-3.6.1 released ------
+
+2017-06-09  ------ inet-3.6.0 released ------
+
+2017-06-01  Zoltan Bojthe
+
+	CID 77786 Out-of-bounds read
+
+2017-06-01  Zoltan Bojthe
+
+	CID 179285 Logical vs. bitwise operator, code indentation
+
+2017-02-20  ------ inet-3.5.0 released ------
+
+2016-11-24  Irene Ruengeler
+
+	Packetdrill: Add StreamReconfig support for SCTP
+
+2016-09-22  Zoltan Bojthe
+
+	omnetpp5: add/use refreshDisplay()
+
+2016-07-20  Zoltan Bojthe
+
+	omnetpp5: replace deprecated cQueue functions: operator(), length(),
+	empty()
+
 2016-06-15  ------ inet-3.4.0 released ------
 
 2016-06-01  ------ inet-3.3.0 released ------

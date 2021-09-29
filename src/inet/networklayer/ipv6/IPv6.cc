@@ -78,7 +78,9 @@ void IPv6::initialize(int stage)
         nd = getModuleFromPar<IPv6NeighbourDiscovery>(par("ipv6NeighbourDiscoveryModule"), this);
         icmp = getModuleFromPar<ICMPv6>(par("icmpv6Module"), this);
         tunneling = getModuleFromPar<IPv6Tunneling>(par("ipv6TunnelingModule"), this);
-
+#ifdef WITH_SERUM
+        sm = getModuleFromPar<SerumSupport>(par("serumModule"), this, false);
+#endif
         curFragmentId = 0;
         lastCheckTime = SIMTIME_ZERO;
         fragbuf.init(icmp);
@@ -104,7 +106,7 @@ void IPv6::initialize(int stage)
     }
 }
 
-void IPv6::updateDisplayString()
+void IPv6::refreshDisplay() const
 {
     char buf[80] = "";
     if (numForwarded > 0)
@@ -212,9 +214,6 @@ void IPv6::endService(cPacket *msg)
                 preroutingFinish(datagram, fromIE, destIE, nextHop.toIPv6());
         }
     }
-
-    if (hasGUI())
-        updateDisplayString();
 }
 
 InterfaceEntry *IPv6::getSourceInterfaceFrom(cPacket *msg)
@@ -259,6 +258,8 @@ void IPv6::handleMessageFromHL(cPacket *msg)
         return;
     }
 #endif /* WITH_xMIPv6 */
+
+    // TODO-SERUM: Request oder Push von Transport Layer. Muss hier was gemacht werden? (Außer verzögern)
 
     IPv6Address destAddress = datagram->getDestAddress();
 
@@ -384,6 +385,20 @@ void IPv6::routePacket(IPv6Datagram *datagram, const InterfaceEntry *destIE, IPv
             return;
     // don't raise error if sent to ND or ICMP!
 
+
+    // do not attemp to handle monitoring header if no monitoring is available
+    if (sm && rt->isRouter()) {
+        // Handle Hop-by-Hop SERUM Options
+        IPv6ExtensionHeader * const eh = datagram->findExtensionHeaderByType(IP_PROT_IPv6EXT_HOP);
+        if (eh) {
+            IPv6HopByHopOptionsHeader * const hho = dynamic_cast<IPv6HopByHopOptionsHeader *>(eh);
+
+            ASSERT(hho);
+
+            sm->handleRoutedPacket(datagram, hho, getSourceInterfaceFrom(datagram), ift->getInterfaceById(interfaceId));
+        }
+    }
+
     resolveMACAddressAndSendPacket(datagram, interfaceId, nextHop, fromHL);
 }
 
@@ -474,7 +489,7 @@ void IPv6::routeMulticastPacket(IPv6Datagram *datagram, const InterfaceEntry *de
     for (int i = 0; i < ift->getNumInterfaces(); i++) {
         InterfaceEntry *ie = ift->getInterface(i);
         if (fromIE != ie && !ie->isLoopback())
-            fragmentAndSend((IPv6Datagram *)datagram->dup(), ie, MACAddress::BROADCAST_ADDRESS, fromHL);
+            fragmentAndSend(datagram->dup(), ie, MACAddress::BROADCAST_ADDRESS, fromHL);
     }
     delete datagram;
 
@@ -503,7 +518,7 @@ void IPv6::routeMulticastPacket(IPv6Datagram *datagram, const InterfaceEntry *de
     IPv6Address destAddress = datagram->getDestAddress();
     if (rt->isLocalMulticastAddress(destAddress))
     {
-        IPv6Datagram *datagramCopy = (IPv6Datagram *) datagram->dup();
+        IPv6Datagram *datagramCopy = datagram->dup();
 
         // FIXME code from the MPLS model: set packet dest address to routerId (???)
         datagramCopy->setDestAddress(rt->getRouterId());
@@ -534,7 +549,7 @@ void IPv6::routeMulticastPacket(IPv6Datagram *datagram, const InterfaceEntry *de
             // don't forward to input port
             if (outputGateIndex>=0 && outputGateIndex!=inputGateIndex)
             {
-                IPv6Datagram *datagramCopy = (IPv6Datagram *) datagram->dup();
+                IPv6Datagram *datagramCopy = datagram->dup();
 
                 // set datagram source address if not yet set
                 if (datagramCopy->getSrcAddress().isUnspecified())
@@ -574,10 +589,10 @@ void IPv6::localDeliver(IPv6Datagram *datagram)
         EV_DETAIL << "This fragment completes the datagram.\n";
     }
 
-#ifdef WITH_xMIPv6
+#if defined(WITH_xMIPv6) || defined(WITH_SERUM)
     // #### 29.08.07 - CB
     // check for extension headers
-    if (!processExtensionHeaders(datagram)) {
+    if (!processLocalExtensionHeaders(datagram)) {
         // ext. header processing not yet finished
         // datagram was sent to another module or dropped
         // -> interrupt local delivery process
@@ -589,7 +604,6 @@ void IPv6::localDeliver(IPv6Datagram *datagram)
     // decapsulate and send on appropriate output gate
     int protocol = datagram->getTransportProtocol();
     cPacket *packet = decapsulate(datagram);
-
 
     if (protocol == IP_PROT_IPv6_ICMP && dynamic_cast<IPv6NDMessage *>(packet)) {
         EV_INFO << "Neigbour Discovery packet: passing it to ND module\n";
@@ -685,6 +699,12 @@ cPacket *IPv6::decapsulate(IPv6Datagram *datagram)
     controlInfo->setTrafficClass(datagram->getTrafficClass());
     controlInfo->setHopLimit(datagram->getHopLimit());
     controlInfo->setInterfaceId(fromIE ? fromIE->getInterfaceId() : -1);
+
+    // preserve extension headers
+    for (unsigned int i = 0; i < datagram->getExtensionHeaderArraySize(); i++) {
+        IPv6ExtensionHeader * const eh = datagram->getExtensionHeader(i);
+        controlInfo->addExtensionHeader(eh->dup());
+    }
 
     // original IP datagram might be needed in upper layers to send back ICMP error message
     controlInfo->setOrigDatagram(datagram);
@@ -875,16 +895,22 @@ bool IPv6::determineOutputInterface(const IPv6Address& destAddress, IPv6Address&
     return true;
 }
 
-#ifdef WITH_xMIPv6
-bool IPv6::processExtensionHeaders(IPv6Datagram *datagram)
+#if defined(WITH_xMIPv6) || defined(WITH_SERUM)
+bool IPv6::processLocalExtensionHeaders(IPv6Datagram *datagram)
 {
     int noExtHeaders = datagram->getExtensionHeaderArraySize();
     EV_INFO << noExtHeaders << " extension header(s) for processing..." << endl;
+
+#ifdef WITH_SERUM
+    IPv6DestinationOptionsHeader * rest_do = nullptr;
+    IPv6HopByHopOptionsHeader * rest_hh = nullptr;
+#endif
 
     // walk through all extension headers
     for (int i = 0; i < noExtHeaders; i++) {
         IPv6ExtensionHeader *eh = datagram->removeFirstExtensionHeader();
 
+#ifdef WITH_xMIPv6
         if (dynamic_cast<IPv6RoutingHeader *>(eh)) {
             IPv6RoutingHeader *rh = (IPv6RoutingHeader *)(eh);
             EV_DETAIL << "Routing Header with type=" << rh->getRoutingType() << endl;
@@ -902,27 +928,64 @@ bool IPv6::processExtensionHeaders(IPv6Datagram *datagram)
                 delete rh;
                 EV_INFO << "Ignoring unknown routing header" << endl;
             }
-        }
-        else if (dynamic_cast<IPv6DestinationOptionsHeader *>(eh)) {
-            //IPv6DestinationOptionsHeader* doh = (IPv6DestinationOptionsHeader*) (eh);
+        } else
+#endif
+        if (dynamic_cast<IPv6DestinationOptionsHeader *>(eh)) {
+            IPv6DestinationOptionsHeader * doh = (IPv6DestinationOptionsHeader *) (eh);
+            TLVOptions opt = doh->getTlvOptions();
             //EV << "object of type=" << typeid(eh).name() << endl;
 
+#ifdef WITH_xMIPv6
             if (rt->hasMIPv6Support() && dynamic_cast<HomeAddressOption *>(eh)) {
                 datagram->setContextPointer(eh);
                 EV_INFO << "Sending datagram with HoA Option to MIPv6 module" << endl;
                 send(datagram, "xMIPv6Out");
                 return false;
+            } else
+#endif
+#ifdef WITH_SERUM
+            if (sm && opt.findByType(MONITORING_TO_DST) >= 0) {
+                rest_do = doh; // FIXME-SERUM: this is a quirk
+                EV_INFO << "Noticed monitoring request, restoring option" << endl;
             }
+#endif
             else {
                 delete eh;
                 EV_INFO << "Ignoring unknown destination options header" << endl;
             }
         }
-        else {
+        else
+#ifdef WITH_SERUM
+        if (dynamic_cast<IPv6HopByHopOptionsHeader *>(eh)) {
+            IPv6HopByHopOptionsHeader * hho = (IPv6HopByHopOptionsHeader *) (eh);
+            TLVOptions opt = hho->getTlvOptions();
+
+            if (sm && (opt.findByType(MONITORING_HH_APPEND) >= 0 || opt.findByType(MONITORING_HH_INLINE) >= 0)) {
+                rest_hh = hho; // FIXME-SERUM: this is a quirk
+
+                EV_INFO << "Noticed monitoring response, restoring option" << endl;
+            } else {
+                delete eh;
+                EV_INFO << "Ignoring unknown hop by hop options header" << endl;
+            }
+        }
+#endif
+        else
+        {
             delete eh;
             EV_INFO << "Ignoring unknown extension header" << endl;
         }
     }
+
+#ifdef WITH_SERUM
+    // FIXME-SERUM: this is a quirk
+    if (rest_do) {
+        datagram->addExtensionHeader(rest_do);
+    }
+    if (rest_hh) {
+        datagram->addExtensionHeader(rest_hh);
+    }
+#endif
 
     // we have processed no extension headers -> the IPv6 module can continue
     // working on this datagram

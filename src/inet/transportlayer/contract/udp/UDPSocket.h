@@ -23,6 +23,7 @@
 #include "inet/networklayer/common/L3Address.h"
 #include "inet/transportlayer/contract/udp/UDPControlInfo.h"
 #include "inet/networklayer/contract/IInterfaceTable.h"
+#include "inet/networklayer/contract/NetworkOptions.h"
 
 namespace inet {
 
@@ -68,7 +69,13 @@ class INET_API UDPSocket
     {
         L3Address srcAddr;    // source address of the IP datagram
         int outInterfaceId;    // outgoing interface of the datagram
-        SendOptions() : outInterfaceId(-1) {}
+        NetworkOptions * networkOptions;
+        SendOptions() : outInterfaceId(-1), networkOptions(nullptr) {}
+        ~SendOptions() {
+            if (networkOptions) {
+                delete networkOptions;
+            }
+        }
     };
 
   protected:

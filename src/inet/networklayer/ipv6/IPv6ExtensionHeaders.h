@@ -22,6 +22,25 @@
 
 namespace inet {
 
+class IPv6HopByHopOptionsHeader: public IPv6HopByHopOptionsHeader_Base {
+public:
+    IPv6HopByHopOptionsHeader() :
+            IPv6HopByHopOptionsHeader_Base() { }
+    IPv6HopByHopOptionsHeader(const IPv6HopByHopOptionsHeader& other) :
+            IPv6HopByHopOptionsHeader_Base(other) { }
+    IPv6HopByHopOptionsHeader& operator=(const IPv6HopByHopOptionsHeader& other) {
+        if (this == &other)
+            return *this;
+
+        IPv6HopByHopOptionsHeader_Base::operator=(other);
+
+        return *this;
+    }
+    virtual IPv6HopByHopOptionsHeader *dup() const override;
+
+    virtual short getByteLength() const;
+};
+
 class INET_API IPv6RoutingHeader : public IPv6RoutingHeader_Base
 {
   public:
@@ -31,6 +50,25 @@ class INET_API IPv6RoutingHeader : public IPv6RoutingHeader_Base
     virtual IPv6RoutingHeader *dup() const override { return new IPv6RoutingHeader(*this); }
     // ADD CODE HERE to redefine and implement pure virtual functions from IPv6RoutingHeader_Base
     virtual void setAddressArraySize(unsigned int size) override;
+};
+
+class IPv6DestinationOptionsHeader: public IPv6DestinationOptionsHeader_Base {
+public:
+    IPv6DestinationOptionsHeader() :
+        IPv6DestinationOptionsHeader_Base() { }
+    IPv6DestinationOptionsHeader(const IPv6DestinationOptionsHeader& other) :
+        IPv6DestinationOptionsHeader_Base(other) { }
+    IPv6DestinationOptionsHeader& operator=(const IPv6DestinationOptionsHeader& other) {
+        if (this == &other)
+            return *this;
+
+        IPv6DestinationOptionsHeader_Base::operator=(other);
+
+        return *this;
+    }
+    virtual IPv6DestinationOptionsHeader * dup() const override;
+
+    virtual short getByteLength() const;
 };
 
 } // namespace inet

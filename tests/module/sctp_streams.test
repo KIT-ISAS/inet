@@ -12,6 +12,13 @@ cmdenv-event-banners=false
 cmdenv-express-mode = false
 tkenv-plugin-path = ../../../etc/plugins
 ned-path = .;../../../../src;../../lib
+
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
+
 **.testing = false
 **.testTimeout = 0
 
@@ -61,8 +68,8 @@ ned-path = .;../../../../src;../../lib
 
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: results/General-0.sca
-scalar SCTPFeatureTest.sctp_server.sctp[ \t]*"Bytes received on stream 0 of assoc 3"[ \t]*[1-9][0-9]*
-scalar SCTPFeatureTest.sctp_server.sctp[ \t]*"Bytes received on stream 1 of assoc 3"[ \t]*[1-9][0-9]*
-scalar SCTPFeatureTest.sctp_server.sctp[ \t]*"Bytes received on stream 2 of assoc 3"[ \t]*[1-9][0-9]*
-scalar SCTPFeatureTest.sctp_server.sctp[ \t]*"Bytes received on stream 3 of assoc 3"[ \t]*[1-9][0-9]*
+scalar SCTPFeatureTest.sctp_server.sctp "Bytes received on stream 0 of assoc 3" [1-9][0-9]*
+scalar SCTPFeatureTest.sctp_server.sctp "Bytes received on stream 1 of assoc 3" [1-9][0-9]*
+scalar SCTPFeatureTest.sctp_server.sctp "Bytes received on stream 2 of assoc 3" [1-9][0-9]*
+scalar SCTPFeatureTest.sctp_server.sctp "Bytes received on stream 3 of assoc 3" [1-9][0-9]*
 %#--------------------------------------------------------------------------------------------------------------

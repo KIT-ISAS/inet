@@ -36,7 +36,6 @@ void NodeStatus::initialize(int stage)
     if (stage == INITSTAGE_LOCAL) {
         state = getStateByName(par("initialStatus"));
         origIcon = getDisplayString().getTagArg("i", 0);
-        updateDisplayString();
     }
 }
 
@@ -67,6 +66,7 @@ bool NodeStatus::handleOperationStage(LifecycleOperation *operation, int opStage
             ASSERT(getState() == GOING_UP);
             setState(UP);
             EV << node->getFullPath() << " started" << endl;
+            node->bubble("Node started");
         }
     }
     else if (dynamic_cast<NodeShutdownOperation *>(operation)) {
@@ -81,6 +81,7 @@ bool NodeStatus::handleOperationStage(LifecycleOperation *operation, int opStage
             ASSERT(getState() == GOING_DOWN);
             setState(DOWN);
             EV << node->getFullPath() << " shut down" << endl;
+            node->bubble("Node shut down");
         }
     }
     else if (dynamic_cast<NodeCrashOperation *>(operation)) {
@@ -95,6 +96,7 @@ bool NodeStatus::handleOperationStage(LifecycleOperation *operation, int opStage
             ASSERT(getState() == GOING_DOWN);
             setState(DOWN);
             EV << node->getFullPath() << " crashed" << endl;
+            node->bubble("Node crashed");
         }
     }
     return true;
@@ -104,10 +106,9 @@ void NodeStatus::setState(State s)
 {
     state = s;
     emit(nodeStatusChangedSignal, this);
-    updateDisplayString();
 }
 
-void NodeStatus::updateDisplayString()
+void NodeStatus::refreshDisplay() const
 {
     const char *icon;
     switch (state) {

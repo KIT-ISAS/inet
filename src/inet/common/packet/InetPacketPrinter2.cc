@@ -75,9 +75,6 @@ class RIPPacket;
 namespace inet { namespace physicallayer { class RadioFrame; } }
 #endif // ifdef WITH_RADIO
 
-//TODO Do not move next line to top of file - opp_makemake can not detect dependencies inside of '#if' with omnetpp-specific defines
-#if OMNETPP_VERSION >= 0x0405
-
 namespace inet {
 
 using namespace physicallayer;
@@ -103,7 +100,11 @@ class INET_API InetPacketPrinter2 : public cMessagePrinter
     InetPacketPrinter2() { showEncapsulatedPackets = true; }
     virtual ~InetPacketPrinter2() {}
     virtual int getScoreFor(cMessage *msg) const override;
+#if OMNETPP_BUILDNUM < 1018
     virtual void printMessage(std::ostream& os, cMessage *msg) const override;
+#else
+    virtual void printMessage(std::ostream& os, cMessage *msg, const Options *options = nullptr) const override;
+#endif
 };
 
 Register_MessagePrinter(InetPacketPrinter2);
@@ -116,7 +117,11 @@ int InetPacketPrinter2::getScoreFor(cMessage *msg) const
     return msg->isPacket() ? 21 : 0;
 }
 
+#if OMNETPP_BUILDNUM < 1018
 void InetPacketPrinter2::printMessage(std::ostream& os, cMessage *msg) const
+#else
+void InetPacketPrinter2::printMessage(std::ostream& os, cMessage *msg, const Options *options) const
+#endif
 {
     std::string outs;
 
@@ -513,6 +518,4 @@ std::string InetPacketPrinter2::formatRadioFrame(RadioFrame *packet) const
 }
 
 } // namespace inet
-
-#endif    // Register_MessagePrinter
 

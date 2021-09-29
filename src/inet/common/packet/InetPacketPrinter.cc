@@ -45,9 +45,6 @@ namespace inet { class UDPPacket; }
 
 namespace inet {
 
-//TODO Do not move next line to top of file - opp_makemake can not detect dependencies inside of '#if' with omnetpp-specific defines
-#if OMNETPP_VERSION >= 0x0405
-
 class INET_API InetPacketPrinter : public cMessagePrinter
 {
   protected:
@@ -59,7 +56,11 @@ class INET_API InetPacketPrinter : public cMessagePrinter
     InetPacketPrinter() {}
     virtual ~InetPacketPrinter() {}
     virtual int getScoreFor(cMessage *msg) const override;
+#if OMNETPP_BUILDNUM < 1018
     virtual void printMessage(std::ostream& os, cMessage *msg) const override;
+#else
+    virtual void printMessage(std::ostream& os, cMessage *msg, const Options *options) const override;
+#endif
 };
 
 Register_MessagePrinter(InetPacketPrinter);
@@ -69,7 +70,11 @@ int InetPacketPrinter::getScoreFor(cMessage *msg) const
     return msg->isPacket() ? 20 : 0;
 }
 
+#if OMNETPP_BUILDNUM < 1018
 void InetPacketPrinter::printMessage(std::ostream& os, cMessage *msg) const
+#else
+void InetPacketPrinter::printMessage(std::ostream& os, cMessage *msg, const Options *options = nullptr) const
+#endif
 {
     L3Address srcAddr, destAddr;
 
@@ -206,8 +211,6 @@ void InetPacketPrinter::printICMPPacket(std::ostream& os, L3Address srcAddr, L3A
     os << " ICMP: " << srcAddr << " > " << destAddr;
 #endif // ifdef WITH_IPv4
 }
-
-#endif    // Register_MessagePrinter
 
 } // namespace inet
 

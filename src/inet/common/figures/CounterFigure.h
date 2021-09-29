@@ -25,8 +25,6 @@
 // for the moment commented out as omnet cannot instatiate it from a namespace
 //namespace inet {
 
-#if OMNETPP_VERSION >= 0x500
-
 class INET_API CounterFigure : public cGroupFigure, public inet::IIndicatorFigure
 {
     struct Digit
@@ -42,12 +40,13 @@ class INET_API CounterFigure : public cGroupFigure, public inet::IIndicatorFigur
     cTextFigure *labelFigure;
 
     double value = NaN;
+    int labelOffset = 10;
     Anchor anchor = ANCHOR_NW;
 
   protected:
     virtual void parse(cProperty *property) override;
     virtual const char **getAllowedPropertyKeys() const override;
-    cFigure::Point calculateRealPos(Point pos);
+    Point calculateRealPos(const Point& pos);
     void calculateBounds();
     void addChildren();
     void refresh();
@@ -60,54 +59,49 @@ class INET_API CounterFigure : public cGroupFigure, public inet::IIndicatorFigur
     virtual void setValue(int series, simtime_t timestamp, double value) override;
 
     // getters and setters
-    cFigure::Color getBackgroundColor() const;
-    void setBackgroundColor(cFigure::Color color);
+    const Color& getBackgroundColor() const;
+    void setBackgroundColor(const Color& color);
 
     int getDecimalPlaces() const;
     void setDecimalPlaces(int radius);
 
-    cFigure::Color getDigitBackgroundColor() const;
-    void setDigitBackgroundColor(cFigure::Color color);
+    Color getDigitBackgroundColor() const;
+    void setDigitBackgroundColor(const Color& color);
 
-    cFigure::Color getDigitBorderColor() const;
-    void setDigitBorderColor(cFigure::Color color);
+    Color getDigitBorderColor() const;
+    void setDigitBorderColor(const Color& color);
 
-    cFigure::Font getDigitFont() const;
-    void setDigitFont(cFigure::Font font);
+    Font getDigitFont() const;
+    void setDigitFont(const Font& font);
 
-    cFigure::Color getDigitColor() const;
-    void setDigitColor(cFigure::Color color);
+    Color getDigitColor() const;
+    void setDigitColor(const Color& color);
 
     const char *getLabel() const;
     void setLabel(const char *text);
 
-    cFigure::Font getLabelFont() const;
-    void setLabelFont(cFigure::Font font);
+    const int getLabelOffset() const;
+    void setLabelOffset(int offset);
 
-    cFigure::Color getLabelColor() const;
-    void setLabelColor(cFigure::Color color);
+    const Font& getLabelFont() const;
+    void setLabelFont(const Font& font);
 
-    Point getLabelPos() const;
-    void setLabelPos(Point pos);
+    const Color& getLabelColor() const;
+    void setLabelColor(const Color& color);
+
+    const Point& getLabelPos() const;
+    void setLabelPos(const Point& pos);
 
     Anchor getLabelAnchor() const;
     void setLabelAnchor(Anchor anchor);
 
     Point getPos() const;
-    void setPos(Point bounds);
+    void setPos(const Point& bounds);
 
     Anchor getAnchor() const;
     void setAnchor(Anchor anchor);
-};
-
-#else
-
-// dummy figure for OMNeT++ 4.x
-class INET_API CounterFigure : public cGroupFigure {
 
 };
-
-#endif // omnetpp 5
 
 // } // namespace inet
 

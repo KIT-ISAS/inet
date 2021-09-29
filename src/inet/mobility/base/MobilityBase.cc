@@ -52,6 +52,7 @@ static bool isFiniteNumber(double value)
 
 MobilityBase::MobilityBase() :
     visualRepresentation(nullptr),
+    canvasProjection(nullptr),
     constraintAreaMin(Coord::ZERO),
     constraintAreaMax(Coord::ZERO),
     lastPosition(Coord::ZERO),
@@ -160,6 +161,15 @@ void MobilityBase::updateVisualRepresentation()
     if (hasGUI() && visualRepresentation != nullptr) {
         inet::visualizer::MobilityCanvasVisualizer::setPosition(visualRepresentation, canvasProjection->computeCanvasPoint(lastPosition));
     }
+#else
+    auto position = canvasProjection->computeCanvasPoint(lastPosition);
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%lf", position.x);
+    buf[sizeof(buf) - 1] = 0;
+    visualRepresentation->getDisplayString().setTagArg("p", 0, buf);
+    snprintf(buf, sizeof(buf), "%lf", position.y);
+    buf[sizeof(buf) - 1] = 0;
+    visualRepresentation->getDisplayString().setTagArg("p", 1, buf);
 #endif
 }
 
@@ -198,7 +208,7 @@ static int reflect(double min, double max, double& coordinate, double& speed)
 void MobilityBase::reflectIfOutside(Coord& targetPosition, Coord& speed, double& angle)
 {
     int sign;
-    double dummy;
+    double dummy = NaN;
     if (lastPosition.x < constraintAreaMin.x || constraintAreaMax.x < lastPosition.x) {
         sign = reflect(constraintAreaMin.x, constraintAreaMax.x, lastPosition.x, speed.x);
         reflect(constraintAreaMin.x, constraintAreaMax.x, targetPosition.x, dummy);

@@ -14,6 +14,13 @@ cmdenv-event-banners=false
 cmdenv-express-mode = false
 tkenv-plugin-path = ../../../etc/plugins
 ned-path = .;../../../../src;../../lib
+
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
+
 **.testing = false
 **.testTimeout = 0
 
@@ -66,10 +73,10 @@ ned-path = .;../../../../src;../../lib
 #**.vector-recording = false
 
 %#--------------------------------------------------------------------------------------------------------------
-%contains-regex: results/General-0.sca
-scalar SCTPFeatureTest.sctp_client.sctp[ \t]*"Number of StreamReset requests sent"[ \t]*2
-scalar SCTPFeatureTest.sctp_client.sctp[ \t]*"Number of StreamReset requests performed"[ \t]*1
-%contains-regex: results/General-0.sca
-scalar SCTPFeatureTest.sctp_server.sctp[ \t]*"Number of StreamReset requests sent"[ \t]*0
-scalar SCTPFeatureTest.sctp_server.sctp[ \t]*"Number of StreamReset requests performed"[ \t]*1
+%contains: results/General-0.sca
+scalar SCTPFeatureTest.sctp_client.sctp "Number of StreamReset requests sent" 2
+scalar SCTPFeatureTest.sctp_client.sctp "Number of StreamReset requests performed 1
+%contains: results/General-0.sca
+scalar SCTPFeatureTest.sctp_server.sctp "Number of StreamReset requests sent" 0
+scalar SCTPFeatureTest.sctp_server.sctp "Number of StreamReset requests performed" 1
 %#--------------------------------------------------------------------------------------------------------------

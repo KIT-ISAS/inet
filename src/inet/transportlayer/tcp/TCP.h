@@ -94,6 +94,9 @@ class TCPReceiveQueue;
 class INET_API TCP : public cSimpleModule, public ILifecycle
 {
   public:
+    static simsignal_t tcpConnectionAddedSignal;
+    static simsignal_t tcpConnectionRemovedSignal;
+
     struct AppConnKey    // XXX this class is redundant since connId is already globally unique
     {
         int appGateIndex;
@@ -146,7 +149,7 @@ class INET_API TCP : public cSimpleModule, public ILifecycle
     virtual TCPConnection *findConnForApp(int appGateIndex, int connId);
     virtual void segmentArrivalWhileClosed(TCPSegment *tcpseg, L3Address src, L3Address dest);
     virtual void removeConnection(TCPConnection *conn);
-    virtual void updateDisplayString();
+    virtual void refreshDisplay() const override;
 
   public:
     static bool testing;    // switches between tcpEV and testingEV

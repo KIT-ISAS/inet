@@ -180,9 +180,9 @@ class INET_API IGMPv3 : public cSimpleModule, protected cListener
     double groupMembershipInterval;
     double otherQuerierPresentInterval;
     double startupQueryInterval;
-    double startupQueryCount;
+    int startupQueryCount;
     double lastMemberQueryInterval;
-    double lastMemberQueryCount;
+    int lastMemberQueryCount;
     double lastMemberQueryTime;
     double unsolicitedReportInterval;
 
@@ -210,7 +210,7 @@ class INET_API IGMPv3 : public cSimpleModule, protected cListener
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
-    virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj DETAILS_ARG) override;
+    virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details) override;
     virtual ~IGMPv3();
 
   protected:

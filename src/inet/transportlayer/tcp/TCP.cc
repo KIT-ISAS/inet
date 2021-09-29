@@ -49,6 +49,9 @@ namespace tcp {
 
 Define_Module(TCP);
 
+simsignal_t TCP::tcpConnectionAddedSignal = registerSignal("tcpConnectionAdded");
+simsignal_t TCP::tcpConnectionRemovedSignal = registerSignal("tcpConnectionRemoved");
+
 #define EPHEMERAL_PORTRANGE_START    1024
 #define EPHEMERAL_PORTRANGE_END      5000
 
@@ -192,9 +195,6 @@ void TCP::handleMessage(cMessage *msg)
         if (!ret)
             removeConnection(conn);
     }
-
-    if (hasGUI())
-        updateDisplayString();
 }
 
 TCPConnection *TCP::createConnection(int appGateIndex, int connId)
@@ -210,13 +210,9 @@ void TCP::segmentArrivalWhileClosed(TCPSegment *tcpseg, L3Address srcAddr, L3Add
     delete tcpseg;
 }
 
-void TCP::updateDisplayString()
+void TCP::refreshDisplay() const
 {
-#if OMNETPP_VERSION < 0x0500
-    if (getEnvir()->isDisabled()) {
-#else
     if (getEnvir()->isExpressMode()) {
-#endif
         // in express mode, we don't bother to update the display
         // (std::map's iteration is not very fast if map is large)
         getDisplayString().setTagArg("t", 0, "");
@@ -489,6 +485,7 @@ void TCP::removeConnection(TCPConnection *conn)
     if (it != usedEphemeralPorts.end())
         usedEphemeralPorts.erase(it);
 
+    emit(tcpConnectionRemovedSignal, conn);
     delete conn;
 }
 
@@ -539,7 +536,6 @@ bool TCP::handleOperationStage(LifecycleOperation *operation, int stage, IDoneCa
         if ((NodeStartOperation::Stage)stage == NodeStartOperation::STAGE_TRANSPORT_LAYER) {
             //FIXME implementation
             isOperational = true;
-            updateDisplayString();
         }
     }
     else if (dynamic_cast<NodeShutdownOperation *>(operation)) {
@@ -547,7 +543,6 @@ bool TCP::handleOperationStage(LifecycleOperation *operation, int stage, IDoneCa
             //FIXME close connections???
             reset();
             isOperational = false;
-            updateDisplayString();
         }
     }
     else if (dynamic_cast<NodeCrashOperation *>(operation)) {
@@ -555,7 +550,6 @@ bool TCP::handleOperationStage(LifecycleOperation *operation, int stage, IDoneCa
             //FIXME implementation
             reset();
             isOperational = false;
-            updateDisplayString();
         }
     }
     else {

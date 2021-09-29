@@ -51,6 +51,32 @@ struct int_symbol platform_symbols_table[] = {
     { SCTP_MAXSEG,                      "SCTP_MAXSEG"                     },
     { SCTP_DELAYED_SACK,                "SCTP_DELAYED_SACK"               },
     { SCTP_MAX_BURST,                   "SCTP_MAX_BURST"                  },
+    { SCTP_FRAGMENT_INTERLEAVE,         "SCTP_FRAGMENT_INTERLEAVE"        },
+    { SCTP_INTERLEAVING_SUPPORTED,      "SCTP_INTERLEAVING_SUPPORTED"     },
+    { SCTP_UNORDERED,                   "SCTP_UNORDERED"                  },
+    { SCTP_ASSOCINFO,                   "SCTP_ASSOCINFO"                  },
+    { SCTP_PEER_ADDR_PARAMS,            "SCTP_PEER_ADDR_PARAMS"           },
+
+    { SCTP_COOKIE_WAIT,                 "SCTP_COOKIE_WAIT"                },
+
+    /* sctp stream reconfiguration */
+    { SCTP_ENABLE_STREAM_RESET,         "SCTP_ENABLE_STREAM_RESET"        },
+    { SCTP_ENABLE_RESET_STREAM_REQ,     "SCTP_ENABLE_RESET_STREAM_REQ"    },
+    { SCTP_ENABLE_RESET_ASSOC_REQ,      "SCTP_ENABLE_RESET_ASSOC_REQ"     },
+    { SCTP_ENABLE_CHANGE_ASSOC_REQ,     "SCTP_ENABLE_CHANGE_ASSOC_REQ"    },
+    { SCTP_RESET_STREAMS,               "SCTP_RESET_STREAMS"              },
+    { SCTP_STREAM_RESET_INCOMING,       "SCTP_STREAM_RESET_INCOMING"      },
+    { SCTP_STREAM_RESET_OUTGOING,       "SCTP_STREAM_RESET_OUTGOING"      },
+    { SCTP_RESET_ASSOC,                 "SCTP_RESET_ASSOC"                },
+    { SCTP_ADD_STREAMS,                 "SCTP_ADD_STREAMS"                },
+
+    { SPP_HB_DISABLE,                   "SPP_HB_DISABLE"                  },
+    { SPP_HB_ENABLE,                    "SPP_HB_ENABLE"                   },
+    { SHUT_WR,                          "SHUT_WR"                         },
+    { SCTP_STATUS,                      "SCTP_STATUS"                     },
+    { F_GETFL,                          "F_GETFL"                         },
+    { F_SETFL,                          "F_SETFL"                         },
+    { O_RDWR,                           "PD_O_RDWR"                       },
     /* Sentinel marking the end of the table. */
     { 0, NULL },
 };
@@ -64,8 +90,11 @@ struct int_symbol *platform_symbols(void)
 PacketDrillConfig::PacketDrillConfig()
 {
     ip_version = IP_VERSION_4;
-    tolerance_usecs = 4000;
+    socketDomain = AF_INET;
+    wireProtocol = AF_INET;
+    tolerance_usecs = 75000;
     mtu = TUN_DRIVER_DEFAULT_MTU;
+    scriptPath = nullptr;
 }
 
 PacketDrillConfig::~PacketDrillConfig()
@@ -79,6 +108,7 @@ void PacketDrillConfig::parseScriptOptions(cQueue *options)
 PacketDrillPacket::PacketDrillPacket()
 {
    inetPacket = nullptr;
+   direction = DIRECTION_INVALID;
 }
 
 PacketDrillPacket::~PacketDrillPacket()
@@ -90,11 +120,16 @@ PacketDrillPacket::~PacketDrillPacket()
 PacketDrillExpression::PacketDrillExpression(enum expression_t type_)
 {
     type = type_;
+    format = nullptr;
+    if (type == EXPR_SCTP_SNDRCVINFO)
+        value.sctp_sndrcvinfo = (struct sctp_sndrcvinfo_expr *)malloc(sizeof(struct sctp_sndrcvinfo_expr));
 }
 
 PacketDrillExpression::~PacketDrillExpression()
 {
     if (type == EXPR_LIST) {
+        for (cQueue::Iterator iter(*value.list); !iter.end(); iter++)
+            value.list->remove((*iter));
         delete value.list;
     }
 }
@@ -105,7 +140,7 @@ PacketDrillExpression::~PacketDrillExpression()
  */
 int PacketDrillExpression::unescapeCstringExpression(const char *input_string, char **error)
 {
-    int bytes = strlen(input_string);
+    int bytes = strlen(input_string) + 1;
     type = EXPR_STRING;
     value.string = (char *)malloc(bytes);
     const char *c_in = input_string;
@@ -171,6 +206,30 @@ int PacketDrillExpression::getS32(int32 *val, char **error)
     return STATUS_OK;
 }
 
+int PacketDrillExpression::getU32(uint32 *val, char **error)
+{
+    if (type != EXPR_INTEGER)
+        return STATUS_ERR;
+    if ((value.num > UINT32_MAX) || (value.num < 0)) {
+        EV_DEBUG << "Value out of range for 32-bit unsigned integer: " << value.num << endl;
+        return STATUS_ERR;
+    }
+    *val = value.num;
+    return STATUS_OK;
+}
+
+int PacketDrillExpression::getU16(uint16 *val, char **error)
+{
+    if (type != EXPR_INTEGER)
+        return STATUS_ERR;
+    if ((value.num > UINT16_MAX) || (value.num < 0)) {
+        EV_DEBUG << "Value out of range for 16-bit unsigned integer: " << value.num << endl;
+        return STATUS_ERR;
+    }
+    *val = value.num;
+    return STATUS_OK;
+}
+
 
 /* Do a symbol->int lookup, and return true if we found the symbol. */
 bool PacketDrillExpression::lookupIntSymbol(const char *input_symbol, int64 *output_integer, struct int_symbol *symbols)
@@ -195,11 +254,15 @@ int PacketDrillExpression::symbolToInt(const char *input_symbol, int64 *output_i
 
 PacketDrillEvent::PacketDrillEvent(enum event_t type_)
 {
+    lineNumber = -1;
+    eventNumber = -1;
+    timeType = ANY_TIME;
     type = type_;
     eventTimeEnd = NO_TIME_RANGE;
     eventOffset = NO_TIME_RANGE;
     eventKind.packet = nullptr;
     eventKind.syscall = nullptr;
+    eventKind.command = nullptr;
 }
 
 PacketDrillEvent::~PacketDrillEvent()
@@ -208,17 +271,22 @@ PacketDrillEvent::~PacketDrillEvent()
 
 PacketDrillScript::PacketDrillScript(const char *scriptFile)
 {
-    eventList = new cQueue("eventList");
-    optionList = new cQueue("optionList");
-    buffer = NULL;
-    assert(scriptFile != NULL);
+    eventList = new cQueue("scriptEventList");
+    optionList = new cQueue("scriptOptionList");
+    buffer = nullptr;
+    assert(scriptFile != nullptr);
     scriptPath = scriptFile;
+    length = 0;
 }
 
 PacketDrillScript::~PacketDrillScript()
 {
     for (cQueue::Iterator iter(*eventList); !iter.end(); iter++)
-        delete (PacketDrillEvent *)(iter());
+        eventList->remove((PacketDrillEvent *) (*iter));
+    delete eventList;
+    for (cQueue::Iterator iter(*optionList); !iter.end(); iter++)
+        optionList->remove((PacketDrillEvent *) (*iter));
+    delete optionList;
 }
 
 void PacketDrillScript::readScript()
@@ -260,8 +328,8 @@ void PacketDrillScript::readScript()
             length = 0;
         }
 
-    if (close(fd))
-        EV_INFO << "File destriptor was closed\n";
+        if (close(fd))
+            EV_INFO << "File destriptor was closed\n";
     }
     EV_INFO << "Script " << scriptPath << " was read with " << length << " length\n";
 }
@@ -287,12 +355,31 @@ int PacketDrillScript::parseScriptAndSetConfig(PacketDrillConfig *config, const 
 
 PacketDrillStruct::PacketDrillStruct()
 {
+    value1 = 0;
+    value2 = 0;
+    value3 = 0;
+    value4 = 0;
+    streamNumbers = nullptr;
 }
 
-PacketDrillStruct::PacketDrillStruct(uint32 v1, uint32 v2)
+PacketDrillStruct::PacketDrillStruct(int64 v1, int64 v2)
 {
     value1 = v1;
     value2 = v2;
+    value3 = -2;
+    value4 = -2;
+    streamNumbers = nullptr;
+}
+
+PacketDrillStruct::PacketDrillStruct(int64 v1, int64 v2, int32 v3, int32 v4, cQueue *streams)
+{
+    value1 = v1;
+    value2 = v2;
+    value3 = v3;
+    value4 = v4;
+    if (streams != nullptr) {
+        streamNumbers = streams;
+    }
 }
 
 PacketDrillOption::PacketDrillOption(char *v1, char *v2)
@@ -305,6 +392,11 @@ PacketDrillTcpOption::PacketDrillTcpOption(uint16 kind_, uint16 length_)
 {
     kind = kind_;
     length = length_;
+    mss = 0;
+    timeStamp.val = 0;
+    timeStamp.ecr = 0;
+    blockList = nullptr;
+    windowScale = 0;
     blockCount = 0;
 }
 
@@ -324,37 +416,50 @@ PacketDrillBytes::PacketDrillBytes(uint8 byte)
 {
     listLength = 0;
     byteList.setDataArraySize(listLength + 1);
-    byteList.setData(listLength, byte);
+    byteList.setData(listLength, (0x00FF & byte));
     listLength++;
 }
 
 void PacketDrillBytes::appendByte(uint8 byte)
 {
+    byteList.setDataArraySize(listLength + 1);
     byteList.setData(listLength, byte);
     listLength++;
 }
 
+PacketDrillSctpParameter::~PacketDrillSctpParameter()
+{
+}
 
 PacketDrillSctpParameter::PacketDrillSctpParameter(uint16 type_, int16 len, void* content_)
 {
+    parameterValue = 0;
     uint32 flgs = 0;
     type = type_;
     if (len == -1)
         flgs |= FLAG_CHUNK_LENGTH_NOCHECK;
     parameterLength = len;
+    parameterList = nullptr;
+    content = nullptr;
 
     if (!content_) {
         flgs |= FLAG_CHUNK_VALUE_NOCHECK;
         parameterList = nullptr;
     } else {
-        if (type == SUPPORTED_EXTENSIONS) {
-            PacketDrillBytes *pdb = (PacketDrillBytes *)content_;
-            this->setByteArrayPointer(pdb->getByteList());
-        } else {
-           // parameterList = content_->getList();
+        switch (type) {
+            case SUPPORTED_EXTENSIONS: {
+                PacketDrillBytes *pdb = (PacketDrillBytes *)content_;
+                this->setByteArrayPointer(pdb->getByteList());
+                break;
+            }
+            case SUPPORTED_ADDRESS_TYPES: {
+                parameterList = (cQueue *)(content_);
+                break;
+            }
+            default:
+                content = content_;
         }
     }
-
 
     flags = flgs;
 }

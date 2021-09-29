@@ -22,9 +22,7 @@
 //TODO namespace inet { -- for the moment commented out, as OMNeT++ 5.0 cannot instantiate a figure from a namespace
 using namespace inet;
 
-Register_Class(CounterFigure);
-
-#if OMNETPP_VERSION >= 0x500
+Register_Figure("counter", CounterFigure);
 
 static const int PADDING = 4;
 static const int DIGIT_PADDING = 2;
@@ -50,18 +48,19 @@ static const char *PKEY_LABEL_COLOR = "labelColor";
 static const char *PKEY_INITIAL_VALUE = "initialValue";
 static const char *PKEY_POS = "pos";
 static const char *PKEY_ANCHOR = "anchor";
+static const char *PKEY_LABEL_OFFSET = "labelOffset";
 
 CounterFigure::CounterFigure(const char *name) : cGroupFigure(name)
 {
     addChildren();
 }
 
-cFigure::Color CounterFigure::getBackgroundColor() const
+const cFigure::Color& CounterFigure::getBackgroundColor() const
 {
     return backgroundFigure->getFillColor();
 }
 
-void CounterFigure::setBackgroundColor(cFigure::Color color)
+void CounterFigure::setBackgroundColor(const Color& color)
 {
     backgroundFigure->setFillColor(color);
 }
@@ -108,7 +107,7 @@ cFigure::Color CounterFigure::getDigitBackgroundColor() const
     return digits.size() ? digits[0].bounds->getFillColor() : Color(INIT_DIGIT_BACKGROUND_COLOR);
 }
 
-void CounterFigure::setDigitBackgroundColor(cFigure::Color color)
+void CounterFigure::setDigitBackgroundColor(const Color& color)
 {
     for (Digit digit : digits)
         digit.bounds->setFillColor(color);
@@ -119,7 +118,7 @@ cFigure::Color CounterFigure::getDigitBorderColor() const
     return digits.size() ? digits[0].bounds->getLineColor() : Color(INIT_DIGIT_BORDER_COLOR);
 }
 
-void CounterFigure::setDigitBorderColor(cFigure::Color color)
+void CounterFigure::setDigitBorderColor(const Color& color)
 {
     for (Digit digit : digits)
         digit.bounds->setLineColor(color);
@@ -130,7 +129,7 @@ cFigure::Font CounterFigure::getDigitFont() const
     return digits.size() ? digits[0].text->getFont() : Font(INIT_FONT_NAME, INIT_FONT_SIZE, cFigure::FONT_BOLD);
 }
 
-void CounterFigure::setDigitFont(cFigure::Font font)
+void CounterFigure::setDigitFont(const Font& font)
 {
     for (Digit digit : digits)
         digit.text->setFont(font);
@@ -144,7 +143,7 @@ cFigure::Color CounterFigure::getDigitColor() const
     return digits.size() ? digits[0].text->getColor() : Color(INIT_DIGIT_TEXT_COLOR);
 }
 
-void CounterFigure::setDigitColor(cFigure::Color color)
+void CounterFigure::setDigitColor(const Color& color)
 {
     for (Digit digit : digits)
         digit.text->setColor(color);
@@ -160,22 +159,35 @@ void CounterFigure::setLabel(const char *text)
     labelFigure->setText(text);
 }
 
-cFigure::Font CounterFigure::getLabelFont() const
+const int CounterFigure::getLabelOffset() const
+{
+    return labelOffset;
+}
+
+void CounterFigure::setLabelOffset(int offset)
+{
+    if(labelOffset != offset)   {
+        labelOffset = offset;
+        labelFigure->setPosition(Point(backgroundFigure->getBounds().x + backgroundFigure->getBounds().width / 2, backgroundFigure->getBounds().y + backgroundFigure->getBounds().height + labelOffset));
+    }
+}
+
+const cFigure::Font& CounterFigure::getLabelFont() const
 {
     return labelFigure->getFont();
 }
 
-void CounterFigure::setLabelFont(cFigure::Font font)
+void CounterFigure::setLabelFont(const Font& font)
 {
     labelFigure->setFont(font);
 }
 
-cFigure::Color CounterFigure::getLabelColor() const
+const cFigure::Color& CounterFigure::getLabelColor() const
 {
     return labelFigure->getColor();
 }
 
-void CounterFigure::setLabelColor(cFigure::Color color)
+void CounterFigure::setLabelColor(const Color& color)
 {
     labelFigure->setColor(color);
 }
@@ -229,7 +241,7 @@ cFigure::Point CounterFigure::getPos() const
     return Point(bounds.x, bounds.y);
 }
 
-void CounterFigure::setPos(Point pos)
+void CounterFigure::setPos(const Point& pos)
 {
     Rectangle bounds = backgroundFigure->getBounds();
     Point backgroundPos = calculateRealPos(pos);
@@ -256,53 +268,54 @@ void CounterFigure::setAnchor(Anchor anchor)
 }
 
 // Get North West Point according to anchor
-cFigure::Point CounterFigure::calculateRealPos(Point pos)
+cFigure::Point CounterFigure::calculateRealPos(const Point& pos)
 {
     Rectangle bounds = backgroundFigure->getBounds();
+    Point position = pos;
     switch (anchor) {
         case cFigure::ANCHOR_CENTER:
-            pos.x -= bounds.width / 2;
-            pos.y -= bounds.height / 2;
+            position.x -= bounds.width / 2;
+            position.y -= bounds.height / 2;
             break;
 
         case cFigure::ANCHOR_N:
-            pos.x -= bounds.width / 2;
+            position.x -= bounds.width / 2;
             break;
 
         case cFigure::ANCHOR_E:
-            pos.x -= bounds.width;
-            pos.y -= bounds.height / 2;
+            position.x -= bounds.width;
+            position.y -= bounds.height / 2;
             break;
 
         case cFigure::ANCHOR_S:
         case cFigure::ANCHOR_BASELINE_MIDDLE:
-            pos.x -= bounds.width / 2;
-            pos.y -= bounds.height;
+            position.x -= bounds.width / 2;
+            position.y -= bounds.height;
             break;
 
         case cFigure::ANCHOR_W:
-            pos.y -= bounds.height / 2;
+            position.y -= bounds.height / 2;
             break;
 
         case cFigure::ANCHOR_NW:
             break;
 
         case cFigure::ANCHOR_NE:
-            pos.x -= bounds.width;
+            position.x -= bounds.width;
             break;
 
         case cFigure::ANCHOR_SE:
         case cFigure::ANCHOR_BASELINE_END:
-            pos.x -= bounds.width;
-            pos.y -= bounds.height;
+            position.x -= bounds.width;
+            position.y -= bounds.height;
             break;
 
         case cFigure::ANCHOR_SW:
         case cFigure::ANCHOR_BASELINE_START:
-            pos.y -= bounds.width;
+            position.y -= bounds.width;
             break;
     }
-    return Point(pos.x, pos.y);
+    return position;
 }
 
 void CounterFigure::calculateBounds()
@@ -324,9 +337,10 @@ void CounterFigure::parse(cProperty *property)
 {
     cGroupFigure::parse(property);
 
+    const char *s;
+
     setPos(parsePoint(property, PKEY_POS, 0));
 
-    const char *s;
     if ((s = property->getValue(PKEY_BACKGROUND_COLOR)) != nullptr)
         setBackgroundColor(parseColor(s));
     if ((s = property->getValue(PKEY_ANCHOR)) != nullptr)
@@ -345,6 +359,8 @@ void CounterFigure::parse(cProperty *property)
         setDigitColor(parseColor(s));
     if ((s = property->getValue(PKEY_LABEL)) != nullptr)
         setLabel(s);
+    if ((s = property->getValue(PKEY_LABEL_OFFSET)) != nullptr)
+            setLabelOffset(atoi(s));
     if ((s = property->getValue(PKEY_LABEL_FONT)) != nullptr)
         setLabelFont(parseFont(s));
     if ((s = property->getValue(PKEY_LABEL_COLOR)) != nullptr)
@@ -362,7 +378,7 @@ const char **CounterFigure::getAllowedPropertyKeys() const
         const char *localKeys[] = {
             PKEY_BACKGROUND_COLOR, PKEY_DECIMAL_PLACES, PKEY_DIGIT_BACKGROUND_COLOR,
             PKEY_DIGIT_BORDER_COLOR, PKEY_DIGIT_FONT, PKEY_DIGIT_COLOR, PKEY_LABEL, PKEY_LABEL_FONT,
-            PKEY_LABEL_COLOR, PKEY_INITIAL_VALUE, PKEY_POS, PKEY_ANCHOR, nullptr
+            PKEY_LABEL_COLOR, PKEY_INITIAL_VALUE, PKEY_POS, PKEY_ANCHOR, PKEY_LABEL_OFFSET, nullptr
         };
         concatArrays(keys, cGroupFigure::getAllowedPropertyKeys(), localKeys);
     }
@@ -386,7 +402,7 @@ void CounterFigure::layout()
         digits[i].text->setPosition(digits[i].bounds->getBounds().getCenter());
     }
 
-    labelFigure->setPosition(Point(bounds.x + bounds.width / 2, bounds.y + bounds.height));
+    labelFigure->setPosition(Point(bounds.x + bounds.width / 2, bounds.y + bounds.height + labelOffset));
 }
 
 void CounterFigure::addChildren()
@@ -419,7 +435,7 @@ void CounterFigure::refresh()
 {
     // update displayed number
     int max = std::pow(10, digits.size());
-    if(std::isnan(value))
+    if (std::isnan(value))
         for (Digit digit : digits)
             digit.text->setText("");
 
@@ -438,8 +454,6 @@ void CounterFigure::refresh()
         }
     }
 }
-
-#endif    // omnetpp 5
 
 // } // namespace inet
 

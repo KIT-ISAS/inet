@@ -1003,7 +1003,7 @@ IRoute *AODVRouting::createRoute(const L3Address& destAddr, const L3Address& nex
     return newRoute;
 }
 
-void AODVRouting::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj DETAILS_ARG)
+void AODVRouting::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
     Enter_Method("receiveChangeNotification");
     if (signalID == NF_LINK_BREAK) {
@@ -1274,11 +1274,14 @@ void AODVRouting::clearState()
 
     if (useHelloMessages)
         cancelEvent(helloMsgTimer);
-
-    cancelEvent(expungeTimer);
-    cancelEvent(counterTimer);
-    cancelEvent(blacklistTimer);
-    cancelEvent(rrepAckTimer);
+    if (expungeTimer)
+        cancelEvent(expungeTimer);
+    if (counterTimer)
+        cancelEvent(counterTimer);
+    if (blacklistTimer)
+        cancelEvent(blacklistTimer);
+    if (rrepAckTimer)
+        cancelEvent(rrepAckTimer);
 }
 
 void AODVRouting::handleWaitForRREP(WaitForRREP *rrepTimer)
@@ -1288,6 +1291,7 @@ void AODVRouting::handleWaitForRREP(WaitForRREP *rrepTimer)
 
     ASSERT(addressToRreqRetries.find(destAddr) != addressToRreqRetries.end());
     if (addressToRreqRetries[destAddr] == rreqRetries) {
+        cancelRouteDiscovery(destAddr);
         EV_WARN << "Re-discovery attempts for node " << destAddr << " reached RREQ_RETRIES= " << rreqRetries << " limit. Stop sending RREQ." << endl;
         return;
     }
@@ -1621,6 +1625,11 @@ void AODVRouting::cancelRouteDiscovery(const L3Address& destAddr)
         networkProtocol->dropQueuedDatagram(const_cast<const INetworkDatagram *>(it->second));
 
     targetAddressToDelayedPackets.erase(lt, ut);
+
+    auto waitRREPIter = waitForRREPTimers.find(destAddr);
+    ASSERT(waitRREPIter != waitForRREPTimers.end());
+    cancelAndDelete(waitRREPIter->second);
+    waitForRREPTimers.erase(waitRREPIter);
 }
 
 bool AODVRouting::updateValidRouteLifeTime(const L3Address& destAddr, simtime_t lifetime)
@@ -1658,16 +1667,18 @@ void AODVRouting::handleRREPACK(AODVRREPACK *rrepACK, const L3Address& neighborA
     // which RREP it is acknowledging.  The time at which the RREP-ACK is
     // received will likely come just after the time when the RREP was sent
     // with the 'A' bit.
-    ASSERT(rrepAckTimer->isScheduled());
-    EV_INFO << "RREP-ACK arrived from " << neighborAddr << endl;
+    if (rrepAckTimer->isScheduled()) {
+        EV_INFO << "RREP-ACK arrived from " << neighborAddr << endl;
 
-    IRoute *route = routingTable->findBestMatchingRoute(neighborAddr);
-    if (route && route->getSource() == this) {
-        EV_DETAIL << "Marking route " << route << " as active" << endl;
-        AODVRouteData *routeData = check_and_cast<AODVRouteData *>(route->getProtocolData());
-        routeData->setIsActive(true);
-        cancelEvent(rrepAckTimer);
+        IRoute *route = routingTable->findBestMatchingRoute(neighborAddr);
+        if (route && route->getSource() == this) {
+            EV_DETAIL << "Marking route " << route << " as active" << endl;
+            AODVRouteData *routeData = check_and_cast<AODVRouteData *>(route->getProtocolData());
+            routeData->setIsActive(true);
+            cancelEvent(rrepAckTimer);
+        }
     }
+    delete rrepACK;
 }
 
 void AODVRouting::handleRREPACKTimer()

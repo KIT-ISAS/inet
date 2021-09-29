@@ -19,7 +19,7 @@ import inet.common.figures.DelegateSignalConfigurator;
 import inet.networklayer.configurator.ipv4.IPv4NetworkConfigurator;
 import inet.node.inet.INetworkNode;
 import inet.physicallayer.contract.packetlevel.IRadioMedium;
-import inet.visualizer.integrated.IntegratedCanvasVisualizer;
+import inet.visualizer.contract.IIntegratedVisualizer;
 
 
 network WirelessA
@@ -31,13 +31,11 @@ network WirelessA
         @display("bgb=650,500;bgg=100,1,grey95");
         @figure[title](type=label; pos=0,-1; anchor=sw; color=darkblue);
 
-        @figure[rcvdPkText](type=indicatorText; pos=420,20; anchor=w; font=,20; textFormat="packets received: %g"; initialValue=0);
-        @statistic[rcvdPk](source=hostB_rcvdPk; record=figure(count); targetFigure=rcvdPkText);
-        @signal[hostB_rcvdPk];
-        @delegatesignal[rcvdPk](source=hostB.udpApp[0].rcvdPk; target=hostB_rcvdPk);
+        @figure[rcvdPkText](type=indicatorText; pos=380,20; anchor=w; font=,18; textFormat="packets received: %g"; initialValue=0);
+        @statistic[rcvdPk](source=hostB.udpApp[0].rcvdPk; record=figure(count); targetFigure=rcvdPkText);
 
     submodules:
-        visualizer: IntegratedCanvasVisualizer {
+        visualizer: <default("IntegratedCanvasVisualizer")> like IIntegratedVisualizer if hasVisualizer() {
             @display("p=580,125");
         }
         configurator: IPv4NetworkConfigurator {
@@ -46,9 +44,6 @@ network WirelessA
         radioMedium: <mediumType> like IRadioMedium {
             @display("p=580,275");
         }
-        figureHelper: DelegateSignalConfigurator {
-            @display("p=580,350");
-        }
         hostA: <hostType> like INetworkNode {
             @display("p=50,325");
         }
@@ -56,6 +51,3 @@ network WirelessA
             @display("p=450,325");
         }
 }
-
-//##### (marker for doxygen)
-

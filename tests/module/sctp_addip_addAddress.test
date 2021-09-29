@@ -13,6 +13,13 @@ cmdenv-express-mode = false
 #cmdenv-module-messages=false
 tkenv-plugin-path = ../../../etc/plugins
 ned-path = .;../../../../src;../../lib
+
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
+
 **.testing = false
 **.testTimeout = 0
 
@@ -66,5 +73,5 @@ ned-path = .;../../../../src;../../lib
 
 %#--------------------------------------------------------------------------------------------------------------
 %contains-regex: results/General-0.sca
-scalar multihomed.sctp_server.sctp 	"Number of Heartbeat ACKs Sent 3:10.2.1.1" 	[1-9][0-9]*
+scalar multihomed.sctp_server.sctp "Number of Heartbeat ACKs Sent 3:10.2.1.1" [1-9][0-9]*
 %#--------------------------------------------------------------------------------------------------------------

@@ -19,8 +19,6 @@
 
 namespace inet {
 
-#if OMNETPP_VERSION >= 0x0405
-
 class INET_API InetPacketBytesPrinter : public cMessagePrinter
 {
   protected:
@@ -30,7 +28,11 @@ class INET_API InetPacketBytesPrinter : public cMessagePrinter
     InetPacketBytesPrinter() { showEncapsulatedPackets = true; }
     virtual ~InetPacketBytesPrinter() {}
     virtual int getScoreFor(cMessage *msg) const override;
+#if OMNETPP_BUILDNUM < 1018
     virtual void printMessage(std::ostream& os, cMessage *msg) const override;
+#else
+    virtual void printMessage(std::ostream& os, cMessage *msg, const Options *options) const override;
+#endif
 };
 
 Register_MessagePrinter(InetPacketBytesPrinter);
@@ -43,7 +45,11 @@ int InetPacketBytesPrinter::getScoreFor(cMessage *msg) const
     return msg->isPacket() ? 18 : 0;
 }
 
+#if OMNETPP_BUILDNUM < 1018
 void InetPacketBytesPrinter::printMessage(std::ostream& os, cMessage *msg) const
+#else
+void InetPacketBytesPrinter::printMessage(std::ostream& os, cMessage *msg, const Options *options = nullptr) const
+#endif
 {
     std::string outs;
 
@@ -59,8 +65,6 @@ void InetPacketBytesPrinter::printMessage(std::ostream& os, cMessage *msg) const
     }
     os << outs;
 }
-
-#endif    // Register_MessagePrinter
 
 } // namespace inet
 

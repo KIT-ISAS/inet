@@ -1,5 +1,0 @@
-repo: 679c1fbc79444f175a55f9630cd21368d74f8fc2
-node: 08c391d0660a9676f952b6121548ed39d3426109
-branch: default
-latesttag: nsc-0.5.3
-latesttagdistance: 1

@@ -134,7 +134,7 @@ InterfaceEntry *IdealMac::createInterfaceEntry()
     return e;
 }
 
-void IdealMac::receiveSignal(cComponent *source, simsignal_t signalID, long value DETAILS_ARG)
+void IdealMac::receiveSignal(cComponent *source, simsignal_t signalID, long value, cObject *details)
 {
     Enter_Method_Silent();
     if (signalID == IRadio::transmissionStateChangedSignal) {
@@ -201,6 +201,7 @@ void IdealMac::handleLowerPacket(cPacket *msg)
     IdealMacFrame *frame = check_and_cast<IdealMacFrame *>(msg);
     if (frame->hasBitError()) {
         EV << "Received " << frame << " contains bit errors or collision, dropping it\n";
+        // TODO: add reason? emit(LayeredProtocolBase::packetFromLowerDroppedSignal, frame);
         delete frame;
         return;
     }

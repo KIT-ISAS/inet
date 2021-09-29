@@ -950,8 +950,10 @@ void PIMDM::processSourceActiveTimer(cMessage *timer)
     upstream->stateRefreshTimer = nullptr;
 
     // delete the route, because there are no more packets
-    deleteRoute(route->source, route->group);
-    IPv4MulticastRoute *ipv4Route = findIPv4MulticastRoute(route->group, route->source);
+    IPv4Address routeSource = route->source;
+    IPv4Address routeGroup = route->group;
+    deleteRoute(routeSource, routeGroup);
+    IPv4MulticastRoute *ipv4Route = findIPv4MulticastRoute(routeGroup, routeSource);
     if (ipv4Route)
         rt->deleteMulticastRoute(ipv4Route);
 }
@@ -1034,7 +1036,7 @@ void PIMDM::processAssertTimer(cMessage *timer)
     }
 }
 
-void PIMDM::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj DETAILS_ARG)
+void PIMDM::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
     Enter_Method_Silent();
     printNotificationBanner(signalID, obj);

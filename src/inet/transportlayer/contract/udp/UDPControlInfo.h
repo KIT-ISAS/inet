@@ -19,8 +19,43 @@
 #define __INET_UDPCONTROLINFO_H
 
 #include "inet/transportlayer/contract/udp/UDPControlInfo_m.h"
+#include "inet/networklayer/contract/NetworkOptions.h"
 
 namespace inet {
+
+class UDPSendCommand: public UDPSendCommand_Base {
+
+private:
+    void copy(const UDPSendCommand& other);
+public:
+    UDPSendCommand();
+    UDPSendCommand(const UDPSendCommand& other);
+    ~UDPSendCommand();
+
+    UDPSendCommand& operator=(const UDPSendCommand& other);
+    virtual UDPSendCommand *dup() const;
+
+    virtual const NetworkOptionsPtr& getNetworkOptions() const;
+    virtual void setNetworkOptions(const NetworkOptionsPtr& networkOptions);
+    virtual NetworkOptionsPtr replaceNetworkOptions(const NetworkOptionsPtr networkOptions);
+};
+
+class UDPDataIndication: public UDPDataIndication_Base {
+
+private:
+    void copy(const UDPDataIndication& other);
+public:
+    UDPDataIndication();
+    UDPDataIndication(const UDPDataIndication& other);
+    ~UDPDataIndication();
+
+    UDPDataIndication& operator=(const UDPDataIndication& other);
+    virtual UDPDataIndication *dup() const;
+
+    virtual const NetworkOptionsPtr& getNetworkOptions() const;
+    virtual void setNetworkOptions(const NetworkOptionsPtr& networkOptions);
+    virtual NetworkOptionsPtr replaceNetworkOptions(const NetworkOptionsPtr networkOptions = nullptr);
+};
 
 } // namespace inet
 

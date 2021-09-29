@@ -21,6 +21,7 @@
 
 #include "inet/networklayer/contract/IL3AddressType.h"
 #include "inet/networklayer/common/InterfaceMatcher.h"
+#include "inet/common/stlutils.h"
 #include "inet/common/lifecycle/NodeOperations.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 #include "inet/common/NotifierConsts.h"
@@ -170,6 +171,7 @@ RIPRouting::~RIPRouting()
 {
     for (auto & elem : ripRoutes)
         delete elem;
+    ripRoutes.clear();
     cancelAndDelete(updateTimer);
     cancelAndDelete(triggeredUpdateTimer);
     cancelAndDelete(startupTimer);
@@ -281,7 +283,7 @@ RIPRoute *RIPRouting::importRoute(IRoute *route, RIPRoute::RouteType type, int m
     }
 
     ripRoutes.push_back(ripRoute);
-    emit(numRoutesSignal, ripRoutes.size());
+    emit(numRoutesSignal, (unsigned long)ripRoutes.size());
     return ripRoute;
 }
 
@@ -303,7 +305,7 @@ void RIPRouting::sendRIPRequest(const RIPInterfaceEntry& ripInterface)
 /**
  * Listen on interface/route changes and update private data structures.
  */
-void RIPRouting::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj DETAILS_ARG)
+void RIPRouting::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
     Enter_Method_Silent("RIPRouting::receiveChangeNotification(%s)", notificationCategoryName(signalID));
 
@@ -500,6 +502,8 @@ void RIPRouting::stopRIPRouting()
     cancelEvent(triggeredUpdateTimer);
 
     // clear data
+    for (auto& elem : ripRoutes)
+        delete elem;
     ripRoutes.clear();
     ripInterfaces.clear();
 }
@@ -886,7 +890,7 @@ void RIPRouting::addRoute(const L3Address& dest, int prefixLength, const Interfa
     ripRoute->setLastUpdateTime(simTime());
     ripRoute->setChanged(true);
     ripRoutes.push_back(ripRoute);
-    emit(numRoutesSignal, ripRoutes.size());
+    emit(numRoutesSignal, (unsigned long)ripRoutes.size());
     triggerUpdate();
 }
 
@@ -1023,12 +1027,10 @@ void RIPRouting::purgeRoute(RIPRoute *ripRoute)
         deleteRoute(route);
     }
 
-    auto end = std::remove(ripRoutes.begin(), ripRoutes.end(), ripRoute);
-    if (end != ripRoutes.end())
-        ripRoutes.erase(end, ripRoutes.end());
+    remove(ripRoutes, ripRoute);
     delete ripRoute;
 
-    emit(numRoutesSignal, ripRoutes.size());
+    emit(numRoutesSignal, (unsigned long)ripRoutes.size());
 }
 
 /**
@@ -1121,6 +1123,7 @@ void RIPRouting::deleteInterface(const InterfaceEntry *ie)
     bool emitNumRoutesSignal = false;
     for (auto it = ripRoutes.begin(); it != ripRoutes.end(); ) {
         if ((*it)->getInterface() == ie) {
+            delete *it;
             it = ripRoutes.erase(it);
             emitNumRoutesSignal = true;
         }
@@ -1128,7 +1131,7 @@ void RIPRouting::deleteInterface(const InterfaceEntry *ie)
             it++;
     }
     if (emitNumRoutesSignal)
-        emit(numRoutesSignal, ripRoutes.size());
+        emit(numRoutesSignal, (unsigned long)ripRoutes.size());
 }
 
 int RIPRouting::getInterfaceMetric(InterfaceEntry *ie)

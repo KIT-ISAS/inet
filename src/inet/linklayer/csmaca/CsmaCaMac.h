@@ -20,6 +20,7 @@
 
 #include "inet/common/FSMA.h"
 #include "inet/common/queue/IPassiveQueue.h"
+#include "inet/common/queue/PacketQueue.h"
 #include "inet/linklayer/base/MACProtocolBase.h"
 #include "inet/physicallayer/contract/packetlevel/IRadio.h"
 #include "inet/linklayer/csmaca/CsmaCaMacFrame_m.h"
@@ -79,7 +80,7 @@ class INET_API CsmaCaMac : public MACProtocolBase
     int retryCounter = -1;
 
     /** Messages received from upper layer and to be transmitted later */
-    cPacketQueue transmissionQueue;
+    PacketQueue transmissionQueue;
 
     /** Passive queue module to request messages from */
     IPassiveQueue *queueModule = nullptr;
@@ -148,7 +149,7 @@ class INET_API CsmaCaMac : public MACProtocolBase
     virtual void handleLowerPacket(cPacket *msg) override;
     virtual void handleWithFsm(cMessage *msg);
 
-    virtual void receiveSignal(cComponent *source, simsignal_t signalID, long value DETAILS_ARG) override;
+    virtual void receiveSignal(cComponent *source, simsignal_t signalID, long value, cObject *details) override;
 
     virtual CsmaCaMacDataFrame *encapsulate(cPacket *msg);
     virtual cPacket *decapsulate(CsmaCaMacDataFrame *frame);

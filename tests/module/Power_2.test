@@ -4,16 +4,16 @@ Test for depletion, energy storage should be depleted but should not be charged.
 
 %file: test.ned
 
-import inet.power.storage.SimpleEnergyStorage;
-import inet.power.consumer.AlternatingEnergyConsumer;
-import inet.power.generator.AlternatingEnergyGenerator;
+import inet.power.storage.SimpleEpEnergyStorage;
+import inet.power.consumer.AlternatingEpEnergyConsumer;
+import inet.power.generator.AlternatingEpEnergyGenerator;
 
 network Test
 {
     submodules:
-        energyStorage: SimpleEnergyStorage;
-        energyConsumer: AlternatingEnergyConsumer;
-        energyGenerator: AlternatingEnergyGenerator;
+        energyStorage: SimpleEpEnergyStorage;
+        energyConsumer: AlternatingEpEnergyConsumer;
+        energyGenerator: AlternatingEpEnergyGenerator;
 }
 
 %inifile: omnetpp.ini
@@ -21,8 +21,14 @@ network Test
 [General]
 network = Test
 ned-path = .;../../../../src
-sim-time-limit = 10s
+sim-time-limit = 11s
 cmdenv-express-mode = false
+
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
 
 **.energyStorage.nominalCapacity = 10 J
 **.energyStorage.initialCapacity = 5 J

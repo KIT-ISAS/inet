@@ -29,6 +29,43 @@ namespace inet {
 
 namespace utils {
 
+cNEDValue nedf_hasVisualizer(cComponent *context, cNEDValue argv[], int argc)
+{
+#ifdef WITH_VISUALIZERS
+    return true;
+#else
+    return false;
+#endif
+}
+
+Define_NED_Function2(nedf_hasVisualizer,
+        "bool hasVisualizer()",
+        "",
+        "Returns true if the visualizer feature is available"
+        );
+
+cNEDValue nedf_hasModule(cComponent *context, cNEDValue argv[], int argc)
+{
+    cRegistrationList *types = componentTypes.getInstance();
+    if (argv[0].getType() != cNEDValue::STR)
+        throw cRuntimeError("hasModule(): string arguments expected");
+    const char *name = argv[0].stringValue();
+    cComponentType *c;
+    c = dynamic_cast<cComponentType *>(types->lookup(name)); // by qualified name
+    if (c && c->isAvailable())
+        return true;
+    c = dynamic_cast<cComponentType *>(types->find(name)); // by simple name
+    if (c && c->isAvailable())
+        return true;
+    return false;
+}
+
+Define_NED_Function2(nedf_hasModule,
+        "bool hasModule(string nedTypeName)",
+        "string",
+        "Returns true if the given NED type exists"
+        );
+
 cNEDValue nedf_haveClass(cComponent *context, cNEDValue argv[], int argc)
 {
     return classes.getInstance()->lookup(argv[0].stringValue()) != nullptr;
@@ -164,7 +201,7 @@ cNEDValue nedf_nanToZero(cComponent *context, cNEDValue argv[], int argc)
 {
     double x = argv[0].doubleValue();
     const char *unit = argv[0].getUnit();
-    return std::isnan(x) ? cNEDValue(0, unit) : argv[0];
+    return std::isnan(x) ? cNEDValue(0.0, unit) : argv[0];
 }
 
 Define_NED_Function2(nedf_nanToZero,
@@ -172,6 +209,73 @@ Define_NED_Function2(nedf_nanToZero,
         "math",
         "Returns the argument if it is not NaN, otherwise returns 0."
         );
+
+#if OMNETPP_VERSION <= 0x0503 && OMNETPP_BUILDNUM < 1014
+#if OMNETPP_BUILDNUM <= 1012
+static cNEDValue nedf_intWithUnit(cComponent *contextComponent, cNEDValue argv[], int argc)
+{
+    switch (argv[0].getType()) {
+        case cNEDValue::BOOL:
+            return (long)( (bool)argv[0] ? 1 : 0 );
+        case cNEDValue::DBL:
+            argv[0].setPreservingUnit(floor(argv[0].doubleValue()));
+            return argv[0];
+        case cNEDValue::STR:
+            throw cRuntimeError("intWithUnit(): Cannot convert string to int");
+        case cNEDValue::XML:
+            throw cRuntimeError("intWithUnit(): Cannot convert xml to int");
+        default:
+            throw cRuntimeError("Internal error: Invalid cNedValue type");
+    }
+}
+#else
+static cNedValue nedf_intWithUnit(cComponent *contextComponent, cNedValue argv[], int argc)
+{
+    switch (argv[0].getType()) {
+        case cNedValue::BOOL:
+            return (intpar_t)( (bool)argv[0] ? 1 : 0 );
+        case cNedValue::DOUBLE:
+            argv[0].setPreservingUnit(floor(argv[0].doubleValue()));
+            return argv[0];
+        case cNedValue::STRING:
+            throw cRuntimeError("intWithUnit(): Cannot convert string to int");
+        case cNedValue::XML:
+            throw cRuntimeError("intWithUnit(): Cannot convert xml to int");
+        default:
+            throw cRuntimeError("Internal error: Invalid cNedValue type");
+    }
+}
+#endif
+Define_NED_Function2(nedf_intWithUnit,
+    "quantity intWithUnit(any x)",
+    "conversion",
+    "Converts x to an integer (C++ long), and returns the result. A boolean argument becomes 0 or 1; a double is converted using floor(); a string or an XML argument causes an error.");
+
+#else
+static cNedValue nedf_intWithUnit(cComponent *contextComponent, cNedValue argv[], int argc)
+{
+    switch (argv[0].getType()) {
+        case cNedValue::BOOL:
+            return (intpar_t)( (bool)argv[0] ? 1 : 0 );
+        case cNedValue::INT:
+            return argv[0];
+        case cNedValue::DOUBLE:
+            return cNedValue(checked_int_cast<intpar_t>(floor(argv[0].doubleValue())), argv[0].getUnit());
+        case cNedValue::STRING:
+            throw cRuntimeError("intWithUnit(): Cannot convert string to int");
+        case cNedValue::XML:
+            throw cRuntimeError("intWithUnit(): Cannot convert xml to int");
+        default:
+            throw cRuntimeError("Internal error: Invalid cNedValue type");
+    }
+}
+
+Define_NED_Function2(nedf_intWithUnit,
+    "intquantity intWithUnit(any x)",
+    "conversion",
+    "Converts x to an integer (C++ long), and returns the result. A boolean argument becomes 0 or 1; a double is converted using floor(); a string or an XML argument causes an error.");
+
+#endif
 
 } // namespace utils
 

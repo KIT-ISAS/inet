@@ -70,7 +70,7 @@ void GenericNetworkProtocol::initialize()
     WATCH(numForwarded);
 }
 
-void GenericNetworkProtocol::updateDisplayString()
+void GenericNetworkProtocol::refreshDisplay() const
 {
     char buf[80] = "";
     if (numForwarded > 0)
@@ -103,9 +103,6 @@ void GenericNetworkProtocol::endService(cPacket *pk)
         GenericDatagram *dgram = check_and_cast<GenericDatagram *>(pk);
         handlePacketFromNetwork(dgram);
     }
-
-    if (hasGUI())
-        updateDisplayString();
 }
 
 const InterfaceEntry *GenericNetworkProtocol::getSourceInterfaceFrom(cPacket *msg)
@@ -276,7 +273,7 @@ void GenericNetworkProtocol::routeMulticastPacket(GenericDatagram *datagram, con
 //        // check for local delivery
 //        if (rt->isLocalMulticastAddress(destAddr))
 //        {
-//            GenericDatagram *datagramCopy = (GenericDatagram *) datagram->dup();
+//            GenericDatagram *datagramCopy = datagram->dup();
 //
 //            // FIXME code from the MPLS model: set packet dest address to routerId (???)
 //            datagramCopy->setDestinationAddress(rt->getRouterId());
@@ -334,7 +331,7 @@ void GenericNetworkProtocol::routeMulticastPacket(GenericDatagram *datagram, con
 //            // don't forward to input port
 //            if (destIE && destIE!=fromIE)
 //            {
-//                GenericDatagram *datagramCopy = (GenericDatagram *) datagram->dup();
+//                GenericDatagram *datagramCopy = datagram->dup();
 //
 //                // set datagram source address if not yet set
 //                if (datagramCopy->getSourceAddress().isUnspecified())

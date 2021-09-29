@@ -337,7 +337,7 @@ IPv6NeighbourDiscovery::RDEntry *IPv6NeighbourDiscovery::fetchRDEntry(InterfaceE
 
 const MACAddress& IPv6NeighbourDiscovery::resolveNeighbour(const IPv6Address& nextHop, int interfaceId)
 {
-    Enter_Method("resolveNeighbor(%s,if=%d)", nextHop.str().c_str(), interfaceId);
+    Enter_Method("resolveNeighbor(%s,if=%d)", getEnvir()->isExpressMode() ? "<optimized>" : nextHop.str().c_str(), interfaceId);
 
     Neighbour *nce = neighbourCache.lookup(nextHop, interfaceId);
     //InterfaceEntry *ie = ift->getInterfaceById(interfaceId);

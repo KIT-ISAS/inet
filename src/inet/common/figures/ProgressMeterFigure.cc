@@ -22,9 +22,7 @@
 //TODO namespace inet { -- for the moment commented out, as OMNeT++ 5.0 cannot instantiate a figure from a namespace
 using namespace inet;
 
-Register_Class(ProgressMeterFigure);
-
-#if OMNETPP_VERSION >= 0x500
+Register_Figure("progressMeter", ProgressMeterFigure);
 
 static const char *PKEY_BACKGROUND_COLOR = "backgroundColor";
 static const char *PKEY_STRIP_COLOR = "stripColor";
@@ -36,6 +34,7 @@ static const char *PKEY_TEXT = "text";
 static const char *PKEY_TEXT_FONT = "textFont";
 static const char *PKEY_TEXT_COLOR = "textColor";
 static const char *PKEY_LABEL = "label";
+static const char *PKEY_LABELOFFSET = "labelOffset";
 static const char *PKEY_LABEL_FONT = "labelFont";
 static const char *PKEY_LABEL_COLOR = "labelColor";
 static const char *PKEY_INITIAL_VALUE = "initialValue";
@@ -49,22 +48,22 @@ ProgressMeterFigure::ProgressMeterFigure(const char *name) : cGroupFigure(name)
     addChildren();
 }
 
-cFigure::Color ProgressMeterFigure::getBackgroundColor() const
+const cFigure::Color& ProgressMeterFigure::getBackgroundColor() const
 {
     return backgroundFigure->getFillColor();
 }
 
-void ProgressMeterFigure::setBackgroundColor(cFigure::Color color)
+void ProgressMeterFigure::setBackgroundColor(const Color& color)
 {
     backgroundFigure->setFillColor(color);
 }
 
-cFigure::Color ProgressMeterFigure::getStripColor() const
+const cFigure::Color& ProgressMeterFigure::getStripColor() const
 {
     return stripFigure->getFillColor();
 }
 
-void ProgressMeterFigure::setStripColor(cFigure::Color color)
+void ProgressMeterFigure::setStripColor(const Color& color)
 {
     stripFigure->setFillColor(color);
 }
@@ -102,22 +101,22 @@ void ProgressMeterFigure::setText(const char *text)
     refresh();
 }
 
-cFigure::Font ProgressMeterFigure::getTextFont() const
+const cFigure::Font& ProgressMeterFigure::getTextFont() const
 {
     return valueFigure->getFont();
 }
 
-void ProgressMeterFigure::setTextFont(cFigure::Font font)
+void ProgressMeterFigure::setTextFont(const Font& font)
 {
     valueFigure->setFont(font);
 }
 
-cFigure::Color ProgressMeterFigure::getTextColor() const
+const cFigure::Color& ProgressMeterFigure::getTextColor() const
 {
     return valueFigure->getColor();
 }
 
-void ProgressMeterFigure::setTextColor(cFigure::Color color)
+void ProgressMeterFigure::setTextColor(const Color& color)
 {
     valueFigure->setColor(color);
 }
@@ -132,32 +131,46 @@ void ProgressMeterFigure::setLabel(const char *text)
     labelFigure->setText(text);
 }
 
-cFigure::Font ProgressMeterFigure::getLabelFont() const
+const int ProgressMeterFigure::getLabelOffset() const
+{
+    return labelOffset;
+}
+
+void ProgressMeterFigure::setLabelOffset(int offset)
+{
+    if(labelOffset != offset)   {
+    labelOffset = offset;
+    labelFigure->setPosition(Point(getBounds().x + getBounds().width / 2, getBounds().y + getBounds().height + labelOffset));
+    };
+}
+
+
+const cFigure::Font& ProgressMeterFigure::getLabelFont() const
 {
     return labelFigure->getFont();
 }
 
-void ProgressMeterFigure::setLabelFont(cFigure::Font font)
+void ProgressMeterFigure::setLabelFont(const Font& font)
 {
     labelFigure->setFont(font);
 }
 
-cFigure::Color ProgressMeterFigure::getLabelColor() const
+const cFigure::Color& ProgressMeterFigure::getLabelColor() const
 {
     return labelFigure->getColor();
 }
 
-void ProgressMeterFigure::setLabelColor(cFigure::Color color)
+void ProgressMeterFigure::setLabelColor(const Color& color)
 {
     labelFigure->setColor(color);
 }
 
-cFigure::Rectangle ProgressMeterFigure::getBounds() const
+const cFigure::Rectangle& ProgressMeterFigure::getBounds() const
 {
     return borderFigure->getBounds();
 }
 
-void ProgressMeterFigure::setBounds(Rectangle bounds)
+void ProgressMeterFigure::setBounds(const Rectangle& bounds)
 {
     borderFigure->setBounds(bounds);
     layout();
@@ -190,7 +203,8 @@ void ProgressMeterFigure::parse(cProperty *property)
 {
     cGroupFigure::parse(property);
 
-    setBounds(parseBounds(property));
+
+    setBounds(parseBounds(property, getBounds()));
 
     const char *s;
     if ((s = property->getValue(PKEY_BACKGROUND_COLOR)) != nullptr)
@@ -213,6 +227,8 @@ void ProgressMeterFigure::parse(cProperty *property)
         setTextColor(parseColor(s));
     if ((s = property->getValue(PKEY_LABEL)) != nullptr)
         setLabel(s);
+    if ((s = property->getValue(PKEY_LABELOFFSET)) != nullptr)
+        setLabelOffset(atoi(s));
     if ((s = property->getValue(PKEY_LABEL_FONT)) != nullptr)
         setLabelFont(parseFont(s));
     if ((s = property->getValue(PKEY_LABEL_COLOR)) != nullptr)
@@ -228,7 +244,8 @@ const char **ProgressMeterFigure::getAllowedPropertyKeys() const
         const char *localKeys[] = {
             PKEY_BACKGROUND_COLOR, PKEY_STRIP_COLOR, PKEY_CORNER_RADIUS, PKEY_BORDER_WIDTH,
             PKEY_MIN_VALUE, PKEY_MAX_VALUE, PKEY_TEXT, PKEY_TEXT_FONT, PKEY_TEXT_COLOR, PKEY_LABEL,
-            PKEY_LABEL_FONT, PKEY_LABEL_COLOR, PKEY_INITIAL_VALUE, PKEY_POS, PKEY_SIZE, PKEY_ANCHOR,
+            PKEY_LABELOFFSET, PKEY_LABEL_FONT, PKEY_LABEL_COLOR, PKEY_INITIAL_VALUE, PKEY_POS,
+            PKEY_SIZE, PKEY_ANCHOR,
             PKEY_BOUNDS, nullptr
         };
         concatArrays(keys, cGroupFigure::getAllowedPropertyKeys(), localKeys);
@@ -243,7 +260,7 @@ void ProgressMeterFigure::layout()
     backgroundFigure->setBounds(bounds);
 
     valueFigure->setPosition(Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2));
-    labelFigure->setPosition(Point(bounds.x + bounds.width / 2, bounds.y + bounds.height));
+    labelFigure->setPosition(Point(bounds.x + bounds.width / 2, bounds.y + bounds.height + labelOffset));
 }
 
 void ProgressMeterFigure::addChildren()
@@ -306,8 +323,6 @@ void ProgressMeterFigure::refresh()
         valueFigure->setText(buf);
     }
 }
-
-#endif    // omnetpp 5
 
 // } // namespace inet
 

@@ -104,6 +104,12 @@ ned-path = .;../../../../src;../../lib
 tkenv-plugin-path = ../../../etc/plugins
 sim-time-limit = 250s
 
+#omnetpp 5.0 - 5.1 compatibility:
+eventlog-file = "${resultdir}/${configname}-${runnumber}.elog"
+output-scalar-file = "${resultdir}/${configname}-${runnumber}.sca"
+output-vector-file = "${resultdir}/${configname}-${runnumber}.vec"
+snapshot-file = "${resultdir}/${configname}-${runnumber}.sna"
+
 **.rip.ripConfig = xmldoc("RIPConfig.xml")
 
 **.numUdpApps = 2
@@ -131,87 +137,87 @@ sim-time-limit = 250s
 </RIPConfig>
 %#--------------------------------------------------------------------------------------------------------------
 %contains: results/General-0.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-0.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H1.udpApp[0] rcvdPk:count 100
 %contains: results/General-0.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H1.udpApp[1] echoedPk:count 100
 %contains: results/General-0.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-0.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H2.udpApp[0] rcvdPk:count 100
 %contains: results/General-0.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H2.udpApp[1] echoedPk:count 100
 %contains: results/General-1.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-1.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H1.udpApp[0] rcvdPk:count 100
 %contains: results/General-1.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H1.udpApp[1] echoedPk:count 100
 %contains: results/General-1.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-1.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H2.udpApp[0] rcvdPk:count 100
 %contains: results/General-1.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H2.udpApp[1] echoedPk:count 100
 %contains: results/General-2.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-2.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H1.udpApp[0] rcvdPk:count 100
 %contains: results/General-2.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H1.udpApp[1] echoedPk:count 100
 %contains: results/General-2.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-2.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H2.udpApp[0] rcvdPk:count 100
 %contains: results/General-2.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H2.udpApp[1] echoedPk:count 100
 %contains: results/General-3.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-3.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H1.udpApp[0] rcvdPk:count 100
 %contains: results/General-3.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H1.udpApp[1] echoedPk:count 100
 %contains: results/General-3.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-3.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H2.udpApp[0] rcvdPk:count 100
 %contains: results/General-3.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H2.udpApp[1] echoedPk:count 100
 %contains: results/General-4.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-4.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H1.udpApp[0] rcvdPk:count 100
 %contains: results/General-4.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H1.udpApp[1] echoedPk:count 100
 %contains: results/General-4.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-4.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	100
+scalar Test1.H2.udpApp[0] rcvdPk:count 100
 %contains: results/General-4.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	100
+scalar Test1.H2.udpApp[1] echoedPk:count 100
 %contains: results/General-5.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-5.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	0
+scalar Test1.H1.udpApp[0] rcvdPk:count 0
 %contains: results/General-5.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	0
+scalar Test1.H1.udpApp[1] echoedPk:count 0
 %contains: results/General-5.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-5.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	0
+scalar Test1.H2.udpApp[0] rcvdPk:count 0
 %contains: results/General-5.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	0
+scalar Test1.H2.udpApp[1] echoedPk:count 0
 %contains: results/General-6.sca
-scalar Test1.H1.udpApp[0] 	sentPk:count 	100
+scalar Test1.H1.udpApp[0] sentPk:count 100
 %contains: results/General-6.sca
-scalar Test1.H1.udpApp[0] 	rcvdPk:count 	0
+scalar Test1.H1.udpApp[0] rcvdPk:count 0
 %contains: results/General-6.sca
-scalar Test1.H1.udpApp[1] 	echoedPk:count 	0
+scalar Test1.H1.udpApp[1] echoedPk:count 0
 %contains: results/General-6.sca
-scalar Test1.H2.udpApp[0] 	sentPk:count 	100
+scalar Test1.H2.udpApp[0] sentPk:count 100
 %contains: results/General-6.sca
-scalar Test1.H2.udpApp[0] 	rcvdPk:count 	0
+scalar Test1.H2.udpApp[0] rcvdPk:count 0
 %contains: results/General-6.sca
-scalar Test1.H2.udpApp[1] 	echoedPk:count 	0
+scalar Test1.H2.udpApp[1] echoedPk:count 0
 %#--------------------------------------------------------------------------------------------------------------

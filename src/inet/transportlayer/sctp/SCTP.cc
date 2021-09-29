@@ -49,7 +49,7 @@ void SCTP::printInfoAssocMap()
             assoc = elem.second;
             key = elem.first;
 
-            EV_DETAIL << "assocId: " << assoc->assocId << "  assoc: " << assoc << " src: " << key.localAddr << " dst: " << key.remoteAddr << " lPort: " << key.localPort << " rPort: " << key.remotePort << "\n";
+            EV_DETAIL << "assocId: " << assoc->assocId << "  assoc: " << assoc << " src: " << key.localAddr << " dst: " << key.remoteAddr << " lPort: " << key.localPort << " rPort: " << key.remotePort << " fd: " << assoc->fd <<"\n";
         }
 
         EV_DETAIL << "\n";
@@ -300,23 +300,25 @@ void SCTP::handleMessage(cMessage *msg)
             delete msg;
         }
     }
-    if (hasGUI())
-        updateDisplayString();
 }
 
 SocketOptions* SCTP::collectSocketOptions()
 {
     SocketOptions* sockOptions = new SocketOptions();
-    sockOptions->maxInitRetrans = (int) par("maxInitRetrans");
+    sockOptions->maxInitRetrans = par("maxInitRetrans");
     sockOptions->maxInitRetransTimeout = SCTP_TIMEOUT_INIT_REXMIT_MAX;
-    sockOptions->rtoInitial = (int) par("rtoInitial");
-    sockOptions->rtoMin = (int) par("rtoMin");
-    sockOptions->rtoMax = (int) par("rtoMax");
-    sockOptions->sackFrequency = (int) par("sackFrequency");
-    sockOptions->sackPeriod = (double) par("sackPeriod");
-    sockOptions->maxBurst = (int) par("maxBurst");
-    sockOptions->fragPoint = (int) par("fragPoint");
-    sockOptions->noDelay = ((bool) par("nagleEnabled")) ? 0 : 1;
+    sockOptions->rtoInitial = par("rtoInitial");
+    sockOptions->rtoMin = par("rtoMin");
+    sockOptions->rtoMax = par("rtoMax");
+    sockOptions->sackFrequency = par("sackFrequency");
+    sockOptions->sackPeriod = par("sackPeriod");
+    sockOptions->maxBurst = par("maxBurst");
+    sockOptions->fragPoint = par("fragPoint");
+    sockOptions->nagle = ((bool) par("nagleEnabled")) ? 1 : 0;
+    sockOptions->enableHeartbeats = (bool) par("enableHeartbeats");
+    sockOptions->pathMaxRetrans = par("pathMaxRetrans");
+    sockOptions->hbInterval = par("hbInterval");
+    sockOptions->assocMaxRtx = par("assocMaxRetrans");
     return sockOptions;
 }
 
@@ -398,7 +400,7 @@ void SCTP::send_to_ip(SCTPMessage *msg)
     send(msg, "to_ip");
 }
 
-void SCTP::updateDisplayString()
+void SCTP::refreshDisplay() const
 {
 #if 0
     if (getEnvir()->disable_tracing) {
@@ -988,7 +990,7 @@ void SCTP::finish()
             recordScalar("Average End to End Delay", assoc.cumEndToEndDelay / msgnum);
         }
 
-        recordScalar("RTXMethod", (double)par("RTXMethod"));
+        recordScalar("RTXMethod", (long)par("RTXMethod"));
     }
 }
 

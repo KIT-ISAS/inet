@@ -24,6 +24,7 @@ import inet.networklayer.contract.INetworkLayer;
 import inet.networklayer.contract.IxMIPv6Support;
 import inet.networklayer.icmpv6.ICMPv6;
 import inet.networklayer.icmpv6.IPv6NeighbourDiscovery;
+import inet.networklayer.serum.SerumSupport;
 
 
 //
@@ -44,7 +45,11 @@ module IPv6NetworkLayer like INetworkLayer
         *.ipv6NeighbourDiscoveryModule = default(absPath(".neighbourDiscovery"));
         *.icmpv6Module = default(absPath(".icmpv6"));
         *.ipv6TunnelingModule = default(absPath(".iptunneling"));
-        @display("i=block/fork");
+        bool serumSupportEnabled = default(false);
+        *.serumModule = serumSupportEnabled ? absPath(".serumSupport") : "";
+        string monitoringCollectorModule = default("");
+        *.monitoringCollectorModule = monitoringCollectorModule; // for SerumSupport
+        @display("i=block/fork;bgb=451,338");
     gates:
         input ifIn[] @labels(INetworkDatagram);
         output ifOut[] @labels(INetworkDatagram);
@@ -52,6 +57,7 @@ module IPv6NetworkLayer like INetworkLayer
         output transportOut[] @labels(IPv4ControlInfo/up);
         input pingIn[] @labels(PingPayload/down);
         output pingOut[] @labels(PingPayload/up);
+    types:
     submodules:
         // TODO: rename to ip
         ipv6: IPv6 {
@@ -82,6 +88,9 @@ module IPv6NetworkLayer like INetworkLayer
                 @display("p=44,79");
         }
 
+        serumSupport: SerumSupport if serumSupportEnabled {
+            @display("p=402,79");
+        }
     connections allowunconnected:  // FIXME remove 'nocheck'!
         for i=0..sizeof(transportIn)-1 {
             transportIn[i] --> { @display("m=n"); } --> ipv6.transportIn++;
